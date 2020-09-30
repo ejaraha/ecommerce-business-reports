@@ -44,6 +44,17 @@ clean_wc_tax <- function(wc_tax){
   print("wc_tax successfully cleaned")
   return(wc_tax[1:nrow(wc_tax)-1,])
 }
+clean_wc_registrations <- function(wc_registrations){
+  #(description) cleans the wc_registrations data frame
+  #(parameters) wc_registrations - the data frame with data from woocommerce_registrations_YM.csv
+  #(returns) the clean wc_registrations data frame
+  wc_registrations <- wc_registrations %>%
+    mutate("date" = as.Date(ï..Date)) %>%
+    rename("customer_registrations" = Signups) %>%
+    select(date,
+           customer_registrations)
+  print("wc_registrations successfully cleaned")
+  return(wc_registrations)}
 clean_wc_engine <- function(wc_engine){
   #(description) cleans the wc_engine data frame
   #(parameters) wc_engine - the data frame with data from wp_wc_order_stats_YM.csv

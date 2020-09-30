@@ -40,11 +40,21 @@ orders <- wc_orders %>%
   mutate("turnover" = sales - tax) %>% 
   select(-c(sales, tax))
 
+#create registration table
+#------------------------------------------------------->>
+
+registrations <- wc_registrations
 
 #create traffic table
 #------------------------------------------------------->>
 
 source_medium_update_log()
 
-traffic <- google_analytics
+traffic <- google_analytics %>%
+  group_by(date, source, medium, campaign) %>%
+  summarise(users = sum(users), 
+            new_users = sum(new_users), 
+            newsletter_sign_up = sum(newsletter_sign_up),
+            reach_checkout = sum(reach_checkout),
+            view_cart = sum(view_cart))
 

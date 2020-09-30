@@ -21,6 +21,9 @@ print("wc_orders dataframe created")
 wc_tax <- read.csv(paste(yearmo,"/woocommerce_tax_", yearmo,".csv", sep=""), stringsAsFactors = FALSE)
 print("wc_tax dataframe created")
 
+wc_registrations <- read.csv(paste(yearmo,"/woocommerce_registrations_", yearmo,".csv", sep=""), stringsAsFactors = FALSE)
+print("wc_registrations dataframe created")
+
 wc_engine <- read.csv(paste(yearmo,"/wp_wc_order_stats_", yearmo,".csv", sep=""), stringsAsFactors = FALSE, header = FALSE, col.names = c("date_created", "returning_customer"))
 print("wc_engine dataframe created")
 
@@ -40,6 +43,9 @@ glimpse(wc_orders)
 
 wc_tax <- clean_wc_tax(wc_tax)
 glimpse(wc_tax)
+
+wc_registrations <- clean_wc_registrations(wc_registrations)
+glimpse(wc_registrations)
 
 wc_engine <- clean_wc_engine(wc_engine)
 glimpse(wc_engine)
