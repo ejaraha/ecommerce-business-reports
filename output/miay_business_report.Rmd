@@ -1,0 +1,13 @@
+---
+title: "How the Yarn Unraveled!"
+subtitle: "Made in America Yarns"
+date: "August, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#echo=TRUE means that the code shows
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
+```
+
+
