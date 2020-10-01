@@ -6,8 +6,135 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+
 #echo=TRUE means that the code shows
 knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
+
+library(emojifont)
+library(tidyverse)
+
+yearmo <- "202008"
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+#IMPORT DATA
+
+orders <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/orders_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+registrations <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/registrations_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+traffic <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/traffic_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
 ```
 
 
+# Conversions
+
+```{r message=FALSE, warning=FALSE}
+
+# VALUE BOX (conversions)
+#------------------------------>
+
+# assign variables
+
+vb_news <- as.character(sum(traffic$newsletter_sign_up, registrations$customer_registrations))
+vb_reg <- as.character(sum(registrations$customer_registrations))
+vb_new_cust <- as.character(sum(orders$new_customers))
+
+# create df of parameters
+
+df <- data.frame(
+  x = seq(2, 22, 10), # position of box
+  y = rep(1,3), # position of box
+  h = rep(5,3), # size of box
+  w = rep(9,3), # size of box
+  value = c(vb_news,
+            vb_reg,
+            vb_new_cust),
+  info = c("newsletter signups",
+           "customer registrations",
+           "new customers"),
+  font_family = c(rep("EmojiOne", 3)),
+  color = factor(1:3)
+)
+
+# plot df created above
+
+vb_plot <- function(df){
+  df %>% 
+  ggplot(aes(x, y, height = h, width = w, label = info)) +
+  geom_tile(aes(fill = color)) +
+  geom_text(color = "white", fontface = "bold", size = 20, #size of info
+            aes(label = value, x = x - 4, y = y + 1), hjust = 0) +
+  geom_text(color = "white", fontface = "bold", size = 7,
+            aes(label = info, x = x - 4, y = y - 1), hjust = 0) + #size of value
+  coord_fixed() +
+  scale_fill_brewer(type = "qual",palette = "Dark2") +
+  theme_void() +
+  guides(fill = FALSE)
+}
+vb_plot(df)
+```
+
+
+```{r message=FALSE, warning=FALSE}
+
+# PLOT (conversions)
+
+# plot newsletter signups by source
+
+traffic %>% 
+  #format source/medium for label
+  mutate("source_medium" = paste(source, medium, sep = " / ")) %>%
+  #group by source/medium
+  group_by(source_medium) %>%
+  #sum newsletter_signups by source
+  summarise(newsletter_sign_up = sum(newsletter_sign_up)) %>%
+  filter(newsletter_sign_up != 0) %>%
+  arrange(desc(newsletter_sign_up)) %>% 
+  ggplot(aes(x = source_medium,
+             y = newsletter_sign_up)) +
+    geom_col()
+
+```
+
+
+# Sales
+
+```{r}
+
+# VALUE BOX (sales)
+#------------------------------>
+
+# assign variables
+
+vb_turnover <- sum(orders$turnover)
+vb_net <- sum(vb_turnover, orders$shipping_charged) - 
+  sum(orders$coupons, orders$refunds, orders$shipping_cost)
+vb_orders <- sum(orders$orders_placed)
+vb_aov <- round(vb_turnover/vb_orders, 2)
+vb_ppo <- floor(mean(replace_na(orders$products_purchased/orders$orders_placed, 0)))
+
+# create df of parameters
+
+df <- data.frame(
+  x = c(7,17,2,12,22), # position of box
+  y = c(7,7,1,1,1), # position of box
+  h = rep(5,5), # size of box
+  w = rep(9,5), # size of box
+  value = c(paste("$",vb_turnover, sep=""),
+            paste("$", vb_net, sep=""),
+            vb_orders,
+            paste("$", vb_aov, sep=""),
+            vb_ppo),
+  info = c("turnover",
+           "net profits",
+           "orders placed",
+           "average order value",
+           "products per order"),
+  font_family = c(rep("EmojiOne", 5)),
+  color = factor(1:5)
+)
+
+vb_plot(df)
+
+```
