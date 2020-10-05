@@ -15,15 +15,11 @@ library(tidyverse)
 
 yearmo <- "202008"
 
-```
-
-```{r message=FALSE, warning=FALSE}
-
 #IMPORT DATA
-
 orders <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/orders_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
 registrations <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/registrations_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
 traffic <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/traffic_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+
 ```
 
 
@@ -82,7 +78,7 @@ vb_plot(df)
 
 # plot newsletter signups by source
 
-traffic %>% 
+df <- traffic %>% 
   #format source/medium for label
   mutate("source_medium" = paste(source, medium, sep = " / ")) %>%
   #group by source/medium
@@ -90,7 +86,9 @@ traffic %>%
   #sum newsletter_signups by source
   summarise(newsletter_sign_up = sum(newsletter_sign_up)) %>%
   filter(newsletter_sign_up != 0) %>%
-  arrange(desc(newsletter_sign_up)) %>% 
+  arrange(desc(newsletter_sign_up))
+
+df %>%
   ggplot(aes(x = source_medium,
              y = newsletter_sign_up)) +
     geom_col()
@@ -100,7 +98,7 @@ traffic %>%
 
 # Sales
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 
 # VALUE BOX (sales)
 #------------------------------>
@@ -108,8 +106,7 @@ traffic %>%
 # assign variables
 
 vb_turnover <- sum(orders$turnover)
-vb_net <- sum(vb_turnover, orders$shipping_charged) - 
-  sum(orders$coupons, orders$refunds, orders$shipping_cost)
+vb_net <- sum(orders$net_profit)
 vb_orders <- sum(orders$orders_placed)
 vb_aov <- round(vb_turnover/vb_orders, 2)
 vb_ppo <- floor(mean(replace_na(orders$products_purchased/orders$orders_placed, 0)))
@@ -127,7 +124,7 @@ df <- data.frame(
             paste("$", vb_aov, sep=""),
             vb_ppo),
   info = c("turnover",
-           "net profits",
+           "net profit",
            "orders placed",
            "average order value",
            "products per order"),
@@ -138,3 +135,31 @@ df <- data.frame(
 vb_plot(df)
 
 ```
+
+
+```{r message=FALSE, warning=FALSE}
+
+vrs <- c("turnover", "net_profit", "coupons", "refunds", "fee_paypal", "shipping_charged",
+         "shipping_cost")
+
+df <- orders %>% 
+  #calculate totals for month
+  summarise(across(vrs, sum)) %>% 
+  #pivot variables to values
+  pivot_longer(cols=everything()) %>%
+  #reorder variables
+  mutate(name = factor(name, levels = c("turnover", "net_profit", "shipping_charged", "shipping_cost", "coupons", "refunds", "fee_paypal")))
+  
+df %>%
+  ggplot(aes(x = name, 
+             y = value)) +
+  geom_col()
+
+```
+
+
+
+
+
+
+
