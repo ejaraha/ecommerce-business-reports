@@ -32,8 +32,8 @@ traffic <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/traffic_"
 
 # assign variables
 
-vb_news <- as.character(sum(traffic$newsletter_sign_up, registrations$customer_registrations))
-vb_reg <- as.character(sum(registrations$customer_registrations))
+vb_newsletter_signup <- as.character(sum(traffic$newsletter_sign_up, registrations$customer_registrations))
+vb_register <- as.character(sum(registrations$customer_registrations))
 vb_new_cust <- as.character(sum(orders$new_customers))
 
 # create df of parameters
@@ -43,8 +43,8 @@ df <- data.frame(
   y = rep(1,3), # position of box
   h = rep(5,3), # size of box
   w = rep(9,3), # size of box
-  value = c(vb_news,
-            vb_reg,
+  value = c(vb_newsletter_signup,
+            vb_register,
             vb_new_cust),
   info = c("newsletter signups",
            "customer registrations",
@@ -68,6 +68,7 @@ vb_plot <- function(df){
   theme_void() +
   guides(fill = FALSE)
 }
+
 vb_plot(df)
 ```
 
@@ -105,10 +106,10 @@ df %>%
 
 # assign variables
 
-vb_turnover <- sum(orders$turnover)
-vb_net <- sum(orders$net_profit)
+vb_turnover <- round(sum(orders$turnover),0)
+vb_net <- round(sum(orders$net_profit),0)
 vb_orders <- sum(orders$orders_placed)
-vb_aov <- round(vb_turnover/vb_orders, 2)
+vb_aov <- round(vb_turnover/vb_orders, 0)
 vb_ppo <- floor(mean(replace_na(orders$products_purchased/orders$orders_placed, 0)))
 
 # create df of parameters
@@ -118,10 +119,10 @@ df <- data.frame(
   y = c(7,7,1,1,1), # position of box
   h = rep(5,5), # size of box
   w = rep(9,5), # size of box
-  value = c(paste("$",vb_turnover, sep=""),
-            paste("$", vb_net, sep=""),
+  value = c(paste("$", formatC(vb_turnover, format = 'd', big.mark = ','), sep=""),
+            paste("$", formatC(vb_net, format = 'd', big.mark = ','), sep=""),
             vb_orders,
-            paste("$", vb_aov, sep=""),
+            paste("$", formatC(vb_aov, format = 'd', big.mark = ','), sep=""),
             vb_ppo),
   info = c("turnover",
            "net profit",
@@ -138,6 +139,9 @@ vb_plot(df)
 
 
 ```{r message=FALSE, warning=FALSE}
+
+# COLUMN CHART (sales)[variable vs sum]
+#------------------------------>
 
 vrs <- c("turnover", "net_profit", "coupons", "refunds", "fee_paypal", "shipping_charged",
          "shipping_cost")
@@ -157,9 +161,147 @@ df %>%
 
 ```
 
+```{r message=FALSE, warning=FALSE}
+# COLUMN CART (sales)[day vs orders placed]
+#------------------------------>
+
+orders %>% 
+  ggplot(aes(x = order_date)) +
+  geom_col(aes(y = orders_placed), group=1, color = "purple") +
+  geom_col(aes(y = new_customers), group=1, color = "green")
+```
+
+# Traffic
+
+````{r message=FALSE, warning=FALSE}
+
+# VALUE BOX (traffic)
+#------------------------------>
+
+# assign variables
+
+vb_users <- sum(traffic$users)
+vb_pct_new_users <- round(sum(traffic$new_users)/sum(traffic$users)*100, 0)
+vb_pct_view_cart <- round(sum(traffic$view_cart)/sum(traffic$user)*100, 0)
+vb_pct_reach_checkout <- round(sum(traffic$reach_checkout)/sum(traffic$user)*100, 0)
+
+# create df of parameters
+
+df <- data.frame(
+  x = c(12,2,12,22), # position of box
+  y = c(7,1,1,1), # position of box
+  h = rep(5,4), # size of box
+  w = rep(9,4), # size of box
+  value = c(formatC(vb_users, format = 'd', big.mark = ','),
+            paste(vb_pct_new_users, "%",sep=""),
+            paste(vb_pct_view_cart, "%",sep=""),
+            paste(vb_pct_reach_checkout, "%",sep="")),
+  info = c("unique users",
+           "new users",
+           "viewed their cart",
+           "reached checkout"),
+  font_family = c(rep("EmojiOne",4)),
+  color = factor(1:4)
+)
+
+vb_plot(df)
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+# COLUMN CHART (traffic)[variable vs. sum]
+#------------------------------>
+
+df <- data.frame("orders_placed" = sum(orders$orders_placed), 
+                 "checkout_page_views" = sum(traffic$reach_checkout), 
+                 "cart_views" = sum(traffic$view_cart))
+
+df <- df %>% 
+  pivot_longer(cols=everything()) %>%
+  mutate(name = factor(name, levels = c("orders_placed", "checkout_page_views", "cart_views")))
+
+df %>% 
+  ggplot(aes(x = name, y=value)) +
+  geom_col()
+
+```
 
 
 
+```{r message=FALSE, warning=FALSE}
+
+# COLUMN CART (traffic)[source/medium vs sessions]
+#------------------------------>
+
+df <- traffic %>% 
+  #group by source/medium
+  group_by(source, medium) %>%
+  #format source/medium for label
+  mutate("source_medium" = paste(source, medium, sep = " / "),
+         "sessions" = n()) %>%
+  ungroup() %>%
+  filter(sessions >= 10) %>%
+  select(source_medium, sessions) %>%
+  unique()
+
+df$source_medium <- factor(df$source_medium, 
+                           levels = df$source_medium[order(df$sessions, decreasing = TRUE)])
+
+df %>%
+  ggplot(aes(x = source_medium, y = sessions)) + 
+  geom_col()
+
+```
 
 
+# Campaign
 
+```{r message=FALSE, warning=FALSE}
+
+
+# VALUE BOX (campaigns)
+#------------------------------>
+
+# assign variables
+
+vb_users <- sum(traffic$users)
+vb_pct_new_users <- round(sum(traffic$new_users)/sum(traffic$users)*100, 0)
+vb_pct_view_cart <- round(sum(traffic$view_cart)/sum(traffic$user)*100, 0)
+vb_pct_reach_checkout <- round(sum(traffic$reach_checkout)/sum(traffic$user)*100, 0)
+
+# create df of parameters
+
+df <- data.frame(
+  x = c(12,2,12,22), # position of box
+  y = c(7,1,1,1), # position of box
+  h = rep(5,4), # size of box
+  w = rep(9,4), # size of box
+  value = c(formatC(vb_users, format = 'd', big.mark = ','),
+            paste(vb_pct_new_users, "%",sep=""),
+            paste(vb_pct_view_cart, "%",sep=""),
+            paste(vb_pct_reach_checkout, "%",sep="")),
+  info = c("unique users",
+           "new users",
+           "viewed their cart",
+           "reached checkout"),
+  font_family = c(rep("EmojiOne",4)),
+  color = factor(1:4)
+)
+
+vb_plot(df)
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+
+campaign <- traffic %>%
+  filter(is.na(campaign) != TRUE) %>%
+  group_by(campaign) %>%
+  group_split() 
+
+length(campaign)
+campaign[5]
+
+```
