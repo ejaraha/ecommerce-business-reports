@@ -1,6 +1,5 @@
 library(tidyverse)
 
-
 clean_wc_orders <- function(wc_orders){
   #(description) cleans the wc_orders data frame
   #(parameters) wc_orders - the data frame with data from woocommerce_orders_YM.csv
@@ -20,6 +19,7 @@ clean_wc_orders <- function(wc_orders){
   print("wc_orders successfully cleaned")
   return(wc_orders)
 }
+
 clean_wc_tax <- function(wc_tax){
   #(description) cleans the wc_tax data frame
   #(parameters) wc_tax - the data frame with data from woocommerce_tax_YM.csv
@@ -44,6 +44,7 @@ clean_wc_tax <- function(wc_tax){
   print("wc_tax successfully cleaned")
   return(wc_tax[1:nrow(wc_tax)-1,])
 }
+
 clean_wc_registrations <- function(wc_registrations){
   #(description) cleans the wc_registrations data frame
   #(parameters) wc_registrations - the data frame with data from woocommerce_registrations_YM.csv
@@ -55,18 +56,30 @@ clean_wc_registrations <- function(wc_registrations){
            customer_registrations)
   print("wc_registrations successfully cleaned")
   return(wc_registrations)}
-clean_wc_engine <- function(wc_engine){
-  #(description) cleans the wc_engine data frame
-  #(parameters) wc_engine - the data frame with data from wp_wc_order_stats_YM.csv
-  #(returns) the clean wc_engine data frame
-  wc_engine <- wc_engine %>% 
+
+clean_wpe_returning_customer <- function(wpe_returning_customer){
+  #(description) cleans the wpe_returning_customer data frame
+  #(parameters) wpe_returning_customer - the data frame with data from wpengine_returning_customers_YM.csv
+  #(returns) the clean wpe_returning_customer data frame
+  wpe_returning_customer <- wpe_returning_customer %>% 
     mutate("order_date" = as.Date(date_created),
            returning_customer = as.integer(returning_customer)) %>%
     select(order_date,
            returning_customer)
-  print("wc_engine successfully cleaned")
-  return(wc_engine)
+  print("wpe_returning_customer successfully cleaned")
+  return(wpe_returning_customer)
 }
+
+clean_wpe_coupon_data <- function(wpe_coupon_data){
+  #(description) cleans the wpe_coupon_data data frame
+  #(parameters) wpe_coupon_data - the data frame with data from wpengine_coupon_data_YM.csv
+  #(returns) the clean wpe_coupon_data data frame
+  wpe_coupon_data <- wpe_coupon_data %>% 
+    mutate(coupon_code = as.character(lapply(coupon_code, str_extract, pattern='(?<=code\";s:[:digit:]{1,4}:\")[:alnum:]+(?=\";s:[:digit:]{1,4})')),
+           date_applied = lubridate::as_date(date_applied))
+  return(wpe_coupon_data)
+}
+
 clean_usps <- function(usps){
   #(description) cleans the usps data frame
   #(parameters) usps - the data frame with data from usps_YM.csv
@@ -74,7 +87,7 @@ clean_usps <- function(usps){
   usps <- usps %>%
   filter(Weight != "") %>%
   separate(Weight, c("lb", "oz")) %>%
-  mutate("postage_date" = lubridate::mdy(Print.Date),
+  mutate("date" = lubridate::mdy(Print.Date),
          #remove "$"
          "shipping_cost" = as.double(str_sub(Cost, start = 2)),
          #extract state from full address
@@ -86,7 +99,7 @@ clean_usps <- function(usps){
          "weight_lb" = round(as.double(str_sub(lb, start = 0, end = -3)) 
                              + 0.0625*as.double(str_sub(oz, start = 0, end = -3))
                              , digits = 1)) %>%
-  select(postage_date,
+  select(date,
          shipping_cost,
          weight_lb,
          state,
@@ -95,6 +108,19 @@ clean_usps <- function(usps){
   print("usps successfully cleaned")
   return(usps)
 }
+
+clean_ups <- function(ups){
+  #(description) cleans the ups data frame
+  #(parameters) ups - the data frame with data from ups_YYYYMM.csv
+  #(returns) the clean ups data frame 
+  ups <- ups %>% 
+    mutate(date = lubridate::mdy(Payment.Date),
+           shipping_cost = as.double(str_trim(str_sub(Payment.Amount,2)))) %>%
+    select(date,
+           shipping_cost)
+  return(ups)
+}
+
 clean_paypal <- function(paypal){
   paypal <- paypal %>% 
     mutate("date"=lubridate::mdy(ï..Date),
@@ -127,6 +153,7 @@ clean_paypal <- function(paypal){
   print("paypal successfully cleaned")
   return(paypal)
 }
+
 clean_google_analytics <- function(google_analytics){
   #(description) cleans the google_analytics data frame
   #(parameters) google_analytics - the data frame with data from google_analytics_YM.csv
@@ -166,6 +193,7 @@ clean_google_analytics <- function(google_analytics){
   print("google_analytics successfully cleaned")
   return(google_analytics)
 }
+
 source_medium_check_diff <- function(google_analytics, source_medium_log){
   #(description) compares source/medium combos in current data to source/medium combos in source_medium_log.csv
   #              returns a dataframe with new source/medium combos from the current data
@@ -183,6 +211,7 @@ source_medium_check_diff <- function(google_analytics, source_medium_log){
   print(sprintf("%i source/medium combos in google_analytics were different from source/medium combos in source_medium_log.csv", nrow(source_medium_diff)))
   return(source_medium_diff)
 }
+
 source_medium_update_log <- function(){
   #(description) depending on user input, stops script OR updates source_medium_log.csv with records from source_medium_diff
   #(parameters) none

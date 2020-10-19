@@ -1,4 +1,3 @@
-library(tidyverse)
 source("C:/Users/Owner/repos/miay/analysis/functions.R")
 
 #set working directory
@@ -24,14 +23,20 @@ print("wc_tax dataframe created")
 wc_registrations <- read.csv(paste(yearmo,"/woocommerce_registrations_", yearmo,".csv", sep=""), stringsAsFactors = FALSE)
 print("wc_registrations dataframe created")
 
-wc_engine <- read.csv(paste(yearmo,"/wp_wc_order_stats_", yearmo,".csv", sep=""), stringsAsFactors = FALSE, header = FALSE, col.names = c("date_created", "returning_customer"))
-print("wc_engine dataframe created")
+wpe_returning_customer <- read.csv(paste(yearmo,"/wpengine_returning_customers_", yearmo,".csv", sep=""), stringsAsFactors = FALSE, header = FALSE, col.names = c("date_created", "returning_customer"))
+print("wpe_returning_customer dataframe created")
+
+wpe_coupon_data <- read.csv(paste(yearmo,"/wpengine_coupon_data_", yearmo,".csv", sep=""), stringsAsFactors = FALSE, header = FALSE, col.names = c("order_id", "coupon_code", "date_applied", "discount_amount"), skipNul =  TRUE)
+print("wpe_coupon_data dataframe created")
 
 paypal <- read.csv(paste(yearmo,"/paypal_completed_payments_", yearmo,".csv", sep=""), stringsAsFactors = FALSE)
 print("paypal dataframe created")
 
 usps <- read.csv(paste(yearmo,"/usps_", yearmo,".csv", sep=""), stringsAsFactors = FALSE)
 print("usps dataframe created")
+
+ups <- read.csv(paste(yearmo,"/ups_", yearmo, ".csv", sep=""), stringsAsFactors = FALSE)
+print("ups dataframe created")
 
 google_analytics <- read.csv(paste(yearmo,"/google_analytics_exports_", yearmo,".csv", sep=""), stringsAsFactors = FALSE)
 print("google_analytics dataframe created")
@@ -47,14 +52,20 @@ glimpse(wc_tax)
 wc_registrations <- clean_wc_registrations(wc_registrations)
 glimpse(wc_registrations)
 
-wc_engine <- clean_wc_engine(wc_engine)
-glimpse(wc_engine)
+wpe_returning_customer <- clean_wpe_returning_customer(wpe_returning_customer)
+glimpse(wpe_returning_customer)
+
+wpe_coupon_data <- clean_wpe_coupon_data(wpe_coupon_data)
+glimpse(wpe_coupon_data)
 
 paypal <- clean_paypal(paypal)
 glimpse(paypal)
 
 usps <- clean_usps(usps)
 glimpse(usps)
+
+ups <- clean_ups(ups)
+glimpse(ups)
 
 google_analytics <- clean_google_analytics(google_analytics)
 glimpse(google_analytics)

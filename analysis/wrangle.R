@@ -20,14 +20,16 @@ paypal_fee <- paypal %>%
   summarise("fee_paypal" = sum(fee))
 
 #new customers by date
-wc_engine_new_customers <- wc_engine %>% 
+wpe_new_customers <- wpe_returning_customer %>% 
   group_by(order_date) %>%
   summarise("new_customers" = replace_na(n(), 0) - replace_na(sum(returning_customer),0))
 
 #usps.shipping_cost and ups.shipping_cost by date
 shipping_cost <- usps %>%
-  group_by(postage_date) %>%
-  summarise("shipping_cost" = sum(shipping_cost))
+  group_by(date) %>%
+  summarise("shipping_cost" = sum(shipping_cost)) %>%
+  bind_rows(ups) %>%
+  arrange(date)
 
 #create orders table
 #----------------------------------------------->
@@ -37,8 +39,8 @@ orders <- wc_orders %>%
   left_join(wc_tax, by = "order_date") %>% 
   left_join(paypal_refunds, by = c("order_date" = "date")) %>% 
   left_join(paypal_fee, by = c("order_date" = "date")) %>%
-  left_join(wc_engine_new_customers, by = "order_date") %>%
-  left_join(shipping_cost, by = c("order_date" = "postage_date")) %>%
+  left_join(wpe_new_customers, by = "order_date") %>%
+  left_join(shipping_cost, by = c("order_date" = "date")) %>%
   mutate_at(c("shipping_charged", "refunds", "fee_paypal", "new_customers","shipping_cost", "sales", "tax"), ~replace_na(.,0)) %>%
   mutate("turnover" = sales - tax,
          "net_profit" = sales - tax - fee_paypal - refunds - coupons - shipping_cost + shipping_charged) %>% 
@@ -73,3 +75,24 @@ traffic <- google_analytics %>%
 file_path <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/traffic_", yearmo, ".csv",sep="")
 write.csv(traffic, file_path, row.names = FALSE)
 print(sprintf("FILE CREATED: %s", file_path))
+
+#create coupon_code table
+#------------------------------------------------------->>
+
+coupon_code <- wpe_coupon_data %>%
+  group_by(coupon_code) %>%
+  summarize(total_discounts = sum(discount_amount), total_orders = n())
+
+#create campaign table
+#------------------------------------------------------->>
+
+vars <- c("users", "view_cart", "reach_checkout")
+
+campaign <- traffic %>%
+  filter(source %in% c("newsletter", "facebook")
+         & is.na(campaign) != TRUE) %>%
+  group_by(source, campaign) %>%
+  summarise(across(vars,sum))
+  
+
+
