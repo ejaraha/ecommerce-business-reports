@@ -1,8 +1,9 @@
 library(tidyverse)
 source("C:/Users/Owner/repos/miay/analysis/clean.R")
 
-#creates three new csv files in "C:/Users/Owner/repos/miay/data/YYYYMM"
-#orders_YYYYMM.csv, traffic_YYYYMM.csv, registrations_YYYYMM.csv
+#creates five new csv files in "C:/Users/Owner/repos/miay/data/YYYYMM"
+#orders_YYYYMM.csv, traffic_YYYYMM.csv, registrations_YYYYMM.csv, 
+#coupon_YYYYMM.csv, campaign_YYYYMM.csv
 
 #convert order-level data to date-level data
 #-------------------------------------------->>
@@ -76,15 +77,16 @@ file_path <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/traffic_", yearm
 write.csv(traffic, file_path, row.names = FALSE)
 print(sprintf("FILE CREATED: %s", file_path))
 
-#create coupon_code table
+#create coupon table
 #------------------------------------------------------->>
 
-coupon_code <- wpe_coupon_data %>%
+coupon <- wpe_coupon_data %>%
   group_by(coupon_code) %>%
   summarize(total_discounts = sum(discount_amount), total_orders = n())
 
-#create campaign table
-#------------------------------------------------------->>
+file_path <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/coupon_", yearmo, ".csv",sep="")
+write.csv(coupon, file_path, row.names = FALSE)
+print(sprintf("FILE CREATED: %s", file_path))
 
 vars <- c("users", "view_cart", "reach_checkout")
 
@@ -92,7 +94,14 @@ campaign <- traffic %>%
   filter(source %in% c("newsletter", "facebook")
          & is.na(campaign) != TRUE) %>%
   group_by(source, campaign) %>%
-  summarise(across(vars,sum))
-  
+  summarise(across(all_of(vars),sum)) %>%
+  rename("click" = users)
+
+file_path <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/campaign_", yearmo, ".csv",sep="")
+write.csv(campaign, file_path, row.names = FALSE)
+print(sprintf("FILE CREATED: %s", file_path))
+
+#create campaign table
+#------------------------------------------------------->>
 
 
