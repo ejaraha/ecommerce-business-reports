@@ -19,6 +19,14 @@ yearmo <- "202008"
 orders <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/orders_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
 registrations <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/registrations_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
 traffic <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/traffic_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+coupon <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/coupon_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+campaign <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/campaign_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+
+style <- theme(plot.title = element_text(face = "bold", size = 20),
+               axis.title = element_text(size = 12, face="italic"),
+               axis.text = element_text(size = 12),
+               legend.text = element_text(size = 16),
+               legend.title = element_text(face = "bold", size = 16))
 
 ```
 
@@ -92,7 +100,11 @@ df <- traffic %>%
 df %>%
   ggplot(aes(x = source_medium,
              y = newsletter_sign_up)) +
-    geom_col()
+    geom_col() +
+  labs(title="newsletter signups",
+       x="source / medium",
+       y="number of newsletter signups") +
+  style
 
 ```
 
@@ -148,7 +160,7 @@ vrs <- c("turnover", "net_profit", "coupons", "refunds", "fee_paypal", "shipping
 
 df <- orders %>% 
   #calculate totals for month
-  summarise(across(vrs, sum)) %>% 
+  summarise(across(all_of(vrs), sum)) %>% 
   #pivot variables to values
   pivot_longer(cols=everything()) %>%
   #reorder variables
@@ -157,7 +169,11 @@ df <- orders %>%
 df %>%
   ggplot(aes(x = name, 
              y = value)) +
-  geom_col()
+  geom_col() +
+  labs(title="Profits and Losses",
+       x="",
+       y="") +
+  style
 
 ```
 
@@ -168,7 +184,12 @@ df %>%
 orders %>% 
   ggplot(aes(x = order_date)) +
   geom_col(aes(y = orders_placed), group=1, color = "purple") +
-  geom_col(aes(y = new_customers), group=1, color = "green")
+  geom_col(aes(y = new_customers), group=1, color = "green") +
+  labs(title="Orders Placed by New and Returning Customers",
+       x="day",
+       y="number of orders placed") +
+  style
+
 ```
 
 # Traffic
@@ -223,7 +244,11 @@ df <- df %>%
 
 df %>% 
   ggplot(aes(x = name, y=value)) +
-  geom_col()
+  geom_col() +
+  labs(title="Order Funnel",
+       x="event",
+       y="number of occurrences") +
+  style
 
 ```
 
@@ -250,58 +275,111 @@ df$source_medium <- factor(df$source_medium,
 
 df %>%
   ggplot(aes(x = source_medium, y = sessions)) + 
-  geom_col()
+  geom_col() +
+  labs(title="Website Visits",
+       x="source / medium",
+       y="number of website visits") +
+  style
 
 ```
 
 
-# Campaign
+# Coupons
 
 ```{r message=FALSE, warning=FALSE}
 
 
-# VALUE BOX (campaigns)
+# VALUE BOX (coupons)
 #------------------------------>
 
 # assign variables
 
-vb_users <- sum(traffic$users)
-vb_pct_new_users <- round(sum(traffic$new_users)/sum(traffic$users)*100, 0)
-vb_pct_view_cart <- round(sum(traffic$view_cart)/sum(traffic$user)*100, 0)
-vb_pct_reach_checkout <- round(sum(traffic$reach_checkout)/sum(traffic$user)*100, 0)
+vb_coupon_orders <- sum(coupon$total_orders)
+vb_coupon_discounts <- sum(coupon$total_discounts)
 
 # create df of parameters
 
 df <- data.frame(
-  x = c(12,2,12,22), # position of box
-  y = c(7,1,1,1), # position of box
-  h = rep(5,4), # size of box
-  w = rep(9,4), # size of box
-  value = c(formatC(vb_users, format = 'd', big.mark = ','),
-            paste(vb_pct_new_users, "%",sep=""),
-            paste(vb_pct_view_cart, "%",sep=""),
-            paste(vb_pct_reach_checkout, "%",sep="")),
-  info = c("unique users",
-           "new users",
-           "viewed their cart",
-           "reached checkout"),
-  font_family = c(rep("EmojiOne",4)),
-  color = factor(1:4)
+  x = c(2,12), # position of box
+  y = c(1,1), # position of box
+  h = rep(5,2), # size of box
+  w = rep(9,2), # size of box
+  value = c(vb_coupon_orders,
+            paste("$",formatC(vb_coupon_discounts, format = 'd', big.mark = ','), sep="")),
+  info = c("discounted orders",
+           "total discounts"),
+  font_family = c(rep("EmojiOne",2)),
+  color = factor(1:2)
 )
 
 vb_plot(df)
 
 ```
 
+
 ```{r message=FALSE, warning=FALSE}
 
+# COLUMN CART (coupons)[number of orders and amount discounted]
+#------------------------------>
 
-campaign <- traffic %>%
-  filter(is.na(campaign) != TRUE) %>%
-  group_by(campaign) %>%
-  group_split() 
+df <- coupon
 
-length(campaign)
-campaign[5]
+#amount discounted
+df %>% 
+  ggplot(aes(x = coupon_code, y = total_discounts)) +
+  geom_col() +
+  labs(title="Discounts",
+       x="coupon code",
+       y="amount discounted") +
+  style
+
+#number of orders
+df %>% 
+  ggplot(aes(x = coupon_code, y = total_orders)) +
+  geom_col() +
+  labs(title="Coupon Applications",
+       x="coupon code",
+       y="number of applications") +
+  style
+
+```
+
+# Campaigns
+
+```{r, message=FALSE, warning=FALSE}
+
+# COLUMN CHART (total clicks)
+#------------------------------>
+
+df <- campaign %>%
+  pivot_longer(!c(source, campaign), names_to = "metric", values_to = "value") %>%
+  filter(metric == "click")
+
+df %>% ggplot(aes(x = campaign, y = value, fill = source)) +
+  geom_col(position = "stack") +
+  labs(title="Campaign Link Clicks",
+       x="campaign",
+       y="number of clicks") +
+  style
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+
+# COLUMN CHART (view_cart , reach_checkout)
+#------------------------------>
+
+df <- campaign %>%
+  pivot_longer(!c(source, campaign), names_to = "metric", values_to = "value") %>%
+  filter(metric != "click")
+
+df %>% ggplot(aes(x = metric, y = value, fill = source)) +
+  geom_col(position = "stack") +
+  facet_wrap(~campaign) +
+  labs(title="Campaign Order Funnel",
+       x="event",
+       y="number of occurences") +
+  style
 
 ```
