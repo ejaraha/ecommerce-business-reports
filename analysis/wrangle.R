@@ -27,10 +27,9 @@ wpe_new_customers <- wpe_returning_customer %>%
 
 #usps.shipping_cost and ups.shipping_cost by date
 shipping_cost <- usps %>%
-  group_by(date) %>%
-  summarise("shipping_cost" = sum(shipping_cost)) %>%
   bind_rows(ups) %>%
-  arrange(date)
+  group_by(date) %>%
+  summarise("shipping_cost" = sum(shipping_cost))
 
 #create orders table
 #----------------------------------------------->
