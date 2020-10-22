@@ -22,11 +22,17 @@ traffic <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/traffic_"
 coupon <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/coupon_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
 campaign <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/campaign_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
 
-style <- theme(plot.title = element_text(face = "bold", size = 20),
-               axis.title = element_text(size = 12, face="italic"),
-               axis.text = element_text(size = 12),
-               legend.text = element_text(size = 16),
-               legend.title = element_text(face = "bold", size = 16))
+style <- theme(plot.title = element_text(face = "bold", size = 30),
+               plot.subtitle = element_text(size = 30),
+               axis.title = element_text(size = 25, face="italic"),
+               axis.text = element_text(size = 25),
+               legend.text = element_text(size = 25),
+               legend.title = element_text(face = "bold", size = 25),
+               panel.background = element_rect(fill = NA),
+               panel.grid.major = element_line(colour = "grey88"),
+               axis.ticks = element_line(color=NA))
+
+geom_col_base <- geom_col(fill="darkgoldenrod4", alpha=0.6)
 
 ```
 
@@ -83,7 +89,7 @@ vb_plot(df)
 
 ```{r message=FALSE, warning=FALSE}
 
-# PLOT (conversions)
+# PLOT (newsletter signups)
 
 # plot newsletter signups by source
 
@@ -100,11 +106,11 @@ df <- traffic %>%
 df %>%
   ggplot(aes(x = source_medium,
              y = newsletter_sign_up)) +
-    geom_col() +
+    geom_col_base +
   labs(title="newsletter signups",
        x="source / medium",
        y="number of newsletter signups") +
-  style
+  style + theme(aspect.ratio = 0.6)
 
 ```
 
@@ -164,16 +170,38 @@ df <- orders %>%
   #pivot variables to values
   pivot_longer(cols=everything()) %>%
   #reorder variables
-  mutate(name = factor(name, levels = c("turnover", "net_profit", "shipping_charged", "shipping_cost", "coupons", "refunds", "fee_paypal")))
-  
+  mutate(name = factor(name, levels = c("turnover", 
+                                        "net_profit", 
+                                        "shipping_charged", 
+                                        "shipping_cost", 
+                                        "coupons", 
+                                        "refunds", 
+                                        "fee_paypal")),
+         category = case_when(name %in% c("turnover", 
+                                          "shipping_charged") ~ "profit",
+                              name %in% c("shipping_cost", 
+                                          "coupons", 
+                                          "refunds", 
+                                          "fee_paypal") ~ "loss",
+                              name == "net_profit" ~ "net profit"))
+
+cols <- c("profit"="darkolivegreen", 
+          "net profit"="darkgoldenrod4",
+          "loss"="indianred4")
+
 df %>%
   ggplot(aes(x = name, 
-             y = value)) +
-  geom_col() +
+             y = value,
+             fill = factor(category))) +
   labs(title="Profits and Losses",
        x="",
-       y="") +
-  style
+       y="") +  
+  geom_col(alpha = 0.8) +
+  scale_colour_manual(
+  values = cols,
+  aesthetics = c("color", "fill")) +
+  style + theme(legend.position = "bottom")
+
 
 ```
 
@@ -181,14 +209,30 @@ df %>%
 # COLUMN CART (sales)[day vs orders placed]
 #------------------------------>
 
-orders %>% 
-  ggplot(aes(x = order_date)) +
-  geom_col(aes(y = orders_placed), group=1, color = "purple") +
-  geom_col(aes(y = new_customers), group=1, color = "green") +
-  labs(title="Orders Placed by New and Returning Customers",
+df <- orders %>% 
+  mutate("returning" = abs(orders_placed - new_customers),
+         "new" = new_customers) %>%
+  select(order_date, 
+         returning,
+         new) %>%
+  pivot_longer(!order_date,
+               names_to = "customer_type",
+               values_to = "orders_placed") 
+
+cols <- c("new" = "darkolivegreen4",
+          "returning" = "darkgreen")
+
+df %>% 
+  ggplot(aes(x = order_date, y = orders_placed, fill = factor(customer_type))) +
+  labs(title="Orders Placed",
+       subtitle = "by New and Returning Customers",
        x="day",
        y="number of orders placed") +
-  style
+  geom_col(position = "stack", alpha = 0.8) +
+  scale_colour_manual(
+  values = cols,
+  aesthetics = c("color", "fill")) +
+  style + theme(legend.position = "bottom")
 
 ```
 
@@ -240,14 +284,21 @@ df <- data.frame("orders_placed" = sum(orders$orders_placed),
 
 df <- df %>% 
   pivot_longer(cols=everything()) %>%
-  mutate(name = factor(name, levels = c("orders_placed", "checkout_page_views", "cart_views")))
+  mutate(name = factor(name, levels = c("cart_views", "checkout_page_views", "orders_placed")))
+
+cols <- c("orders_placed"="darkgreen",
+          "checkout_page_views"="darkolivegreen4", 
+          "cart_views"="darkolivegreen2")
 
 df %>% 
-  ggplot(aes(x = name, y=value)) +
-  geom_col() +
+  ggplot(aes(x = name, y=value, fill=name)) +
   labs(title="Order Funnel",
        x="event",
        y="number of occurrences") +
+  geom_col(alpha = 0.8) +
+  scale_color_manual(values = cols,
+                     aesthetics = c("color", "fill"),
+                     guide = FALSE) +
   style
 
 ```
@@ -275,7 +326,7 @@ df$source_medium <- factor(df$source_medium,
 
 df %>%
   ggplot(aes(x = source_medium, y = sessions)) + 
-  geom_col() +
+  geom_col_base +
   labs(title="Website Visits",
        x="source / medium",
        y="number of website visits") +
@@ -327,20 +378,23 @@ df <- coupon
 #amount discounted
 df %>% 
   ggplot(aes(x = coupon_code, y = total_discounts)) +
-  geom_col() +
+  geom_col_base +
   labs(title="Discounts",
        x="coupon code",
        y="amount discounted") +
-  style
+  style + theme(aspect.ratio = 0.6)
 
 #number of orders
+
 df %>% 
   ggplot(aes(x = coupon_code, y = total_orders)) +
-  geom_col() +
+  geom_col_base +
   labs(title="Coupon Applications",
        x="coupon code",
        y="number of applications") +
-  style
+  style + theme(aspect.ratio = 0.6)
+
+
 
 ```
 
@@ -355,17 +409,20 @@ df <- campaign %>%
   pivot_longer(!c(source, campaign), names_to = "metric", values_to = "value") %>%
   filter(metric == "click")
 
-df %>% ggplot(aes(x = campaign, y = value, fill = source)) +
-  geom_col(position = "stack") +
+cols <- c("facebook" = "steelblue",
+          "newsletter" = "yellow2")
+
+df %>% ggplot(aes(x = campaign, y = value, fill = factor(source))) +
   labs(title="Campaign Link Clicks",
        x="campaign",
        y="number of clicks") +
-  style
+  geom_col(position = "stack", alpha = 0.8) +
+  scale_color_manual(values = cols,
+                     aesthetics = c("color", "fill")) +
+  style + theme(aspect.ratio = 0.6,
+               legend.position = "right")
 
-```
 
-
-```{r, message=FALSE, warning=FALSE}
 
 # COLUMN CHART (view_cart , reach_checkout)
 #------------------------------>
@@ -374,12 +431,20 @@ df <- campaign %>%
   pivot_longer(!c(source, campaign), names_to = "metric", values_to = "value") %>%
   filter(metric != "click")
 
+cols <- c("facebook" = "steelblue",
+          "newsletter" = "yellow2")
+
 df %>% ggplot(aes(x = metric, y = value, fill = source)) +
-  geom_col(position = "stack") +
-  facet_wrap(~campaign) +
   labs(title="Campaign Order Funnel",
        x="event",
        y="number of occurences") +
-  style
+  facet_wrap(~campaign) +
+  geom_col(position = "stack", alpha = 0.8) +
+  scale_color_manual(values = cols,
+                     aesthetics = c("color", "fill")) +
+  style + theme(strip.background = element_rect(colour = "grey40", fill = NA),
+                panel.border = element_rect(color = "grey40", fill=NA),
+                aspect.ratio = 1,
+                legend.position = "right")
 
 ```
