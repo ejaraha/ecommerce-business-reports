@@ -43,7 +43,7 @@ print("google_analytics dataframe created")
 
 #clean data
 #---------------------------------------------->>
-wc_orders <- clean_wc_orders(wc_orders) 
+wc_orders <- clean_wc_orders(wc_orders)
 glimpse(wc_orders)
 
 wc_tax <- clean_wc_tax(wc_tax)

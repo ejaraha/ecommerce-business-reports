@@ -1,4 +1,5 @@
 library(tidyverse)
+library(lubridate)
 
 clean_wc_orders <- function(wc_orders){
   #(description) cleans the wc_orders data frame
@@ -8,14 +9,10 @@ clean_wc_orders <- function(wc_orders){
     #change data types
     mutate("order_date" = as.Date(ï..Date)) %>%
     #rename variables
-    rename("products_purchased" = Number.of.items.sold,
-           "orders_placed" = Number.of.orders,
-           "coupons" = Coupon.amount) %>%
+    rename("products_purchased" = Number.of.items.sold) %>%
     #select only necessary variables
     select(order_date, 
-           products_purchased, 
-           orders_placed, 
-           coupons)
+           products_purchased)
   print("wc_orders successfully cleaned")
   return(wc_orders)
 }
@@ -35,9 +32,11 @@ clean_wc_tax <- function(wc_tax){
     #rename variables
     rename("sales" = Total.sales.,
            "shipping_charged" = Total.shipping.,
-           "tax" = Total.tax.) %>% 
+           "tax" = Total.tax.,
+           "orders_placed" = Number.of.orders) %>% 
     #select only necessary variables
     select(order_date,
+           orders_placed,
            sales,
            shipping_charged,
            tax)
@@ -89,12 +88,9 @@ clean_usps <- function(usps){
   separate(Weight, c("lb", "oz")) %>%
   mutate("date" = lubridate::mdy(Print.Date),
          #remove "$"
-         "shipping_cost" = as.double(str_sub(Cost, start = 2)),
+         "shipping_cost" = as.double(str_sub(Amount.Paid, start = 2)),
          #extract state from full address
          "state" = toupper(str_extract(Recipient, "(?<=, )[:alpha:]{2}(?= [:digit:]{5})")),
-         #remove "=" 
-         "tracking_id" = str_sub(Tracking...Insurance.ID, start = 2),
-         "status" = Status,
          #combine oz and lb to weight_lbs
          "weight_lb" = round(as.double(str_sub(lb, start = 0, end = -3)) 
                              + 0.0625*as.double(str_sub(oz, start = 0, end = -3))
@@ -102,9 +98,7 @@ clean_usps <- function(usps){
   select(date,
          shipping_cost,
          weight_lb,
-         state,
-         status,
-         tracking_id)
+         state)
   print("usps successfully cleaned")
   return(usps)
 }
@@ -158,7 +152,7 @@ clean_google_analytics <- function(google_analytics){
   #(description) cleans the google_analytics data frame
   #(parameters) google_analytics - the data frame with data from google_analytics_YM.csv
   #(returns) the clean google_analytics data frame 
-  search_engine <- c("search.aol.com", "search.nation.com", "results.searchlock.com", "emoji.srchmbl.com", "google.com", "okeano.com", "webcrawler.com", "search.xfinity.com")
+  search_engine <- c("search.aol.com", "frontpage.pch.com", "info.com","startpage.com","search.pch.com","gopher.com", "dogpile.com", "search.nation.com", "results.searchlock.com", "emoji.srchmbl.com", "google.com", "okeano.com", "webcrawler.com", "search.xfinity.com")
   google_analytics <- google_analytics %>% 
     separate(Source...Medium, into = c("source", "medium"), sep = "/") %>%
     mutate("date" = lubridate::ymd(google_analytics$Date),
@@ -170,9 +164,12 @@ clean_google_analytics <- function(google_analytics){
            "campaign" = na_if(str_trim(Campaign), "(not set)")) %>% 
     #standardize $source & $medium
     mutate(medium = case_when(source %in% search_engine & medium == "referral" ~ "organic",
+                              source %in% c("m.facebook.com","l.facebook.com", "lm.facebook.com") ~ "social",
                               TRUE ~ as.character(medium)), #fix "organic" searches that were misclassified as "referrals"
            source = case_when(source == "m.chinabrands.com" ~ "chinabrands.com",             
-                              source %in% c("m.facebook.com", "l.facebook.com") ~ "facebook.com",
+                              source %in% c("m.facebook.com", "l.facebook.com", "lm.facebook.com") ~ "facebook.com",
+                              source %in% c("m.yelp.com") ~"yelp.com",
+                              source %in% c("fiber.hassel.net") ~"hassel.net",
                               TRUE ~ as.character(source))) %>%
     #exclude data outside of USA
     filter(Country == "United States") %>%
@@ -215,7 +212,7 @@ source_medium_check_diff <- function(google_analytics, source_medium_log){
 source_medium_update_log <- function(){
   #(description) depending on user input, stops script OR updates source_medium_log.csv with records from source_medium_diff
   #(parameters) none
-  #(returns) if yes_no == "yes", updated source_medium_log.csv. if yes_no == "no", returns nothing.
+  #(returns) if yes_no == "yes", updates source_medium_log.csv. if yes_no == "no", returns nothing.
   print(source_medium_diff)
   yes_no <- as.character(readline(prompt = "Should the records in source_medium_diff be added to source_medium_log.csv? Type \"yes\" or \"no\". "))
   #if "yes", combine source_medium_log and source_medium_diff then update source_medium_log.csv with new records
