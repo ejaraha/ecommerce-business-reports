@@ -103,4 +103,3 @@ print(sprintf("FILE CREATED: %s", file_path))
 #create campaign table
 #------------------------------------------------------->>
 
-

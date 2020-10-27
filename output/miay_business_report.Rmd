@@ -1,14 +1,14 @@
 ---
-title: "How the Yarn Unraveled!"
-subtitle: "Made in America Yarns"
-date: "August, 2020"
+title: "Made in America Yarns"
+subtitle: "August, 2020"
 output: 
   html_document:
-    toc: true
     fig_width: 6
     fig_height: 4
-    fig_caption: true
+params: 
+  yearmo: "202008"
 ---
+
 
 ```{r setup, include=FALSE}
 
@@ -17,7 +17,6 @@ knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
 
 library(emojifont)
 library(tidyverse)
-#library(RColorBrewer)
 
 yearmo <- "202008"
 
@@ -37,31 +36,61 @@ style <- theme(plot.title = element_text(face = "bold", size = 30),
                legend.position = "bottom",
                panel.background = element_rect(fill = NA),
                panel.grid.major = element_line(colour = "grey88"),
-               axis.ticks = element_line(color=NA))
+               axis.ticks = element_line(color=NA),
+               axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
+               axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)))
 
 geom_col_base <- geom_col(fill="darkgoldenrod4", alpha=0.6, width=0.5)
 
 ```
 
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffgggggggggggggggggggggg
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffgggggggggggggggggggggg
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffgggggggggggggggggggggg
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffgggggggggggggggggggggg
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffgggggggggggggggggggggg
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffgggggggggggggggggggggg
 
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+<script type="text/javascript">
+  // When the document is fully rendered...
+  $(document).ready(function() {
+    // ...select all header elements...
+    $('h1, h2, h3, h4, h5').each(function() {
+      // ...and add an id to them corresponding to their 'titles'
+      $(this).attr('id', $(this).html());
+    });
+  });
+</script>
 
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffgggggggggggggggggggggg
-gggggggggggggggggggggg
-aekeeeeeeeffffffffffffggggggggggggggggggggggfffffffffffffffffffffffffffffffffffffffffffffffffff
-gggggggggggggggggggggg
-aekeeeeeeeffffffffffffggggggggggggggggggggggfffffffffffffffffffffffffffffffffffffffffffffffffff
+
+```{css}
+
+h1, h2, h3, p {text-align: center;}
+p {font-size: 16px}
+
+```
+<br></br>
+<br></br>
+
+# Contents
+
+<br></br>
+<a href="#Conversions">Conversions</a>
+<br></br>
+<a href="#Sales">Sales</a>
+<br></br>
+<a href="#Traffic">Traffic</a>
+<br></br>
+<a href="#Coupons">Coupons</a>
+<br></br>
+<a href="#Campaigns">Campaigns</a>
+
+<br></br>
+<br></br>
 
 # Conversions
 
-```{r message=FALSE, warning=FALSE}
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+
+A conversion happens when a user's role in relation to Made in America Yarns changes. When a user subscribes to the newsletter, they become a subscriber. When a user creates an account, they become a registered user. When a user places an order, they become a customer. Conversions for newsletter signups, registrations, and new customers are shown below.
+
+
+```{r message=FALSE, warning=FALSE, fig.height=2}
 
 # VALUE BOX (conversions)
 #------------------------------>
@@ -83,7 +112,7 @@ df <- data.frame(
             vb_register,
             vb_new_cust),
   info_top = c("newsletter",
-           "customer",
+           "",
            "new"),
   info_bottom = c("signups",
            "registrations",
@@ -110,50 +139,15 @@ vb_plot <- function(df){
 vb_plot(df)
 ```
 
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-
-```{r message=FALSE, warning=FALSE}
-
-# PLOT (newsletter signups)
-
-# plot newsletter signups by source
-
-df <- traffic %>% 
-  #format source/medium for label
-  mutate("source_medium" = paste(source, medium, sep = " / ")) %>%
-  #group by source/medium
-  group_by(source_medium) %>%
-  #sum newsletter_signups by source
-  summarise(newsletter_sign_up = sum(newsletter_sign_up)) %>%
-  filter(newsletter_sign_up != 0) %>%
-  arrange(desc(newsletter_sign_up))
-
-df %>%
-  ggplot(aes(x = source_medium,
-             y = newsletter_sign_up)) +
-    geom_col_base +
-  labs(title="newsletter signups",
-       x="source / medium",
-       y="number of newsletter signups") +
-  style + theme(aspect.ratio = 0.6)
-
-```
-
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-
-aekeeeeeeefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+<br></br>
+<br></br>
 
 # Sales
+
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+
+Turnover is equal to product price multiplied by quantity. Net profit is equal to turnover minus losses due to shipping, refunds, coupons, and paypal fees. Expense and order insights are shown below.
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -196,6 +190,8 @@ vb_plot(df)
 
 ```
 
+<br></br>
+<br></br>
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -211,20 +207,20 @@ df <- orders %>%
   #pivot variables to values
   pivot_longer(cols=everything()) %>%
   #reorder variables
-  mutate(name = factor(name, levels = c("turnover", 
-                                        "net_profit", 
-                                        "shipping_charged", 
-                                        "shipping_cost", 
+  mutate(name = factor(str_replace_all(name,"_", " "), levels = c("turnover", 
+                                        "net profit", 
+                                        "shipping charged", 
+                                        "shipping cost", 
                                         "coupons", 
                                         "refunds", 
-                                        "fee_paypal")),
+                                        "fee paypal")),
          category = case_when(name %in% c("turnover", 
-                                          "shipping_charged") ~ "profit",
-                              name %in% c("shipping_cost", 
+                                          "shipping charged") ~ "profit",
+                              name %in% c("shipping cost", 
                                           "coupons", 
                                           "refunds", 
-                                          "fee_paypal") ~ "loss",
-                              name == "net_profit" ~ "net profit"))
+                                          "fee paypal") ~ "loss",
+                              name == "net profit" ~ "net profit"))
 
 cols <- c("profit"="darkolivegreen", 
           "net profit"="darkgoldenrod4",
@@ -240,11 +236,16 @@ df %>%
   geom_col(alpha = 0.8, width=0.8) +
   scale_colour_manual(
     values = cols,
-    aesthetics = c("color", "fill")) +
+    aesthetics = c("color", "fill"),
+    name = "") +
+  scale_y_continuous(labels = scales::dollar) +
   style + theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
 
 
 ```
+
+<br></br>
+<br></br>
 
 ```{r message=FALSE, warning=FALSE}
 # COLUMN CART (sales)[day vs orders placed]
@@ -266,19 +267,26 @@ cols <- c("new" = "darkolivegreen4",
 
 df %>% 
   ggplot(aes(x = order_day, y = orders_placed, fill = factor(customer_type))) +
-  labs(title="Orders Placed",
-       subtitle = "by New and Returning Customers",
-       x="day",
+  labs(title="Orders Placed by New and Returning Customers",
+       x="day of month",
        y="number of orders placed") +
   geom_col(position = "stack", alpha=0.8, width=0.8) +
   scale_colour_manual(
   values = cols,
-  aesthetics = c("color", "fill")) +
+  aesthetics = c("color", "fill"),
+  name="customer type") +
   style 
 
 ```
+<br></br>
+<br></br>
 
 # Traffic
+
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+
+Where are users coming from and how are they interacting with madeinamericayarns.com? This section shows how users behave throughout checkout and where users and newsletter subscribers come from. 
 
 ````{r message=FALSE, warning=FALSE}
 
@@ -317,6 +325,13 @@ vb_plot(df)
 
 ```
 
+**How do users behave throughout checkout?**
+<br></br>
+Users who view their cart but do not reach checkout might not be interested enough in the product. Users who reach checkout but do not place an order might be deterred by price. Understanding user behavior throughout checkout can help optimize the checkout process.
+
+<br></br>
+<br></br>
+
 ```{r message=FALSE, warning=FALSE}
 
 # COLUMN CHART (traffic)[variable vs. sum]
@@ -328,11 +343,15 @@ df <- data.frame("orders_placed" = sum(orders$orders_placed),
 
 df <- df %>% 
   pivot_longer(cols=everything()) %>%
-  mutate(name = factor(name, levels = c("cart_views", "checkout_page_views", "orders_placed")))
+  mutate(name = case_when(name == "cart_views" ~"viewed cart",
+                          name == "checkout_page_views" ~"reached checkout",
+                          name == "orders_placed" ~"placed an order")) %>%
+  mutate(name = factor(name, levels = c("viewed cart", "reached checkout", "placed an order")))
+           
 
-cols <- c("orders_placed"="darkgreen",
-          "checkout_page_views"="darkolivegreen4", 
-          "cart_views"="darkolivegreen2")
+cols <- c("placed an order"="darkgreen",
+          "reached checkout"="darkolivegreen4", 
+          "viewed cart"="darkolivegreen2")
 
 df %>% 
   ggplot(aes(x = name, y=value, fill=name)) +
@@ -347,7 +366,55 @@ df %>%
 
 ```
 
+**Where do users come from?** 
+<br></br>
+The **source** is the exact url *where* a user was before arriving at madeinamericayarns.com. 
+**Medium** describes *how* a user arrived at madeinamericayarns.com: direct, referral, and search engine. 
+If the medium is **direct**, the user typed "madeinamericayarns.com" directly into their browser's address bar. If the medium is **referral**, the user reached MiAY through another website that linked to MiAY. If the medium is **search engine**, the user found MiAY through a search engine.
 
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE}
+
+# PLOT (newsletter signups)
+
+# plot newsletter signups by source
+
+df <- traffic %>% 
+  #format source/medium for label
+  mutate(medium = str_replace(replace_na(medium,"direct"), "organic", "search engine")) %>%
+  #group by source/medium
+  group_by(source, medium) %>%
+  #sum newsletter_signups by source
+  summarise(newsletter_sign_up = sum(newsletter_sign_up)) %>%
+  filter(newsletter_sign_up != 0) %>%
+  arrange(desc(newsletter_sign_up))
+
+y_max <- max(df$newsletter_sign_up) 
+
+cols <- c("search engine" = "slategray",
+          "referral" = "slateblue1",
+          "direct" = "slateblue4")
+
+df %>%
+  ggplot(aes(x = source,
+             y = newsletter_sign_up,
+             fill = medium)) +
+    geom_col(alpha=0.6, width=0.5) +
+  labs(title="Newsletter Subscribers",
+       x="source",
+       y="number of newsletter signups") +
+  scale_y_continuous(breaks=seq(0,y_max,1)) +
+  scale_fill_manual(values = cols,
+                    aesthetics = c("fill", "color"),
+                    guide = FALSE) +
+  style 
+
+```
+
+<br></br>
+<br></br>
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -358,30 +425,48 @@ df <- traffic %>%
   #group by source/medium
   group_by(source, medium) %>%
   #format source/medium for label
-  mutate("source_medium" = paste(source, medium, sep = " / "),
-         "sessions" = n()) %>%
+  mutate("sessions" = n(),
+         medium = factor(str_replace(replace_na(medium, "direct"), "organic", "search engine"),
+                         levels = c("direct", "referral", "search engine"))) %>%
   ungroup() %>%
   filter(sessions >= 10) %>%
-  select(source_medium, sessions) %>%
+  select(source,
+         medium, 
+         sessions) %>%
   unique()
 
-df$source_medium <- factor(df$source_medium, 
-                           levels = df$source_medium[order(df$sessions, decreasing = TRUE)])
+df$source <- factor(df$source, 
+                           levels = df$source[order(df$sessions, decreasing = TRUE)])
+
+cols <- c("search engine" = "slategray",
+          "referral" = "slateblue1",
+          "direct" = "slateblue4")
 
 df %>%
-  ggplot(aes(x = source_medium, y = sessions)) + 
-  geom_col_base +
-  labs(title="Website Visits",
-       x="source / medium",
+  ggplot(aes(x = source, y = sessions, fill=medium)) + 
+  geom_col(alpha = 0.8, width = 0.5) +
+  labs(title="All Users",
+       x="source",
        y="number of website visits") +
-  style
+  scale_fill_manual(values = cols,
+                    aesthetics = c("fill", "color")) +
+  style + theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
 
 ```
-
+<br></br>
+<br></br>
 
 # Coupons
 
-```{r message=FALSE, warning=FALSE}
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+
+Knowing the discounts and number of applications for each coupon can help identify effective promotions. Consider two coupons that were applied the same number of times but result in different amounts in discounts. One could infer that customers were equally interested in both coupons, but the coupon that resulted in less discounts makes more sense from a business perspective.
+
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE, fig.height=2}
 
 
 # VALUE BOX (coupons)
@@ -401,16 +486,18 @@ df <- data.frame(
   w = rep(9,2), # size of box
   value = c(vb_coupon_orders,
             paste("$",formatC(vb_coupon_discounts, format = 'd', big.mark = ','), sep="")),
-  info_top = c("discounted orders",
-           "total discounts"),
-  info_bottom = c("",
-           "")
+  info_top = c("total coupon",
+           ""),
+  info_bottom = c("applications",
+           "total discounts")
 )
 
 vb_plot(df)
 
 ```
 
+<br></br>
+<br></br>
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -426,8 +513,14 @@ df %>%
   labs(title="Discounts",
        x="coupon code",
        y="amount discounted") +
+  scale_y_continuous(labels = scales::dollar) +
   style 
+```
 
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE}
 #number of orders
 
 df %>% 
@@ -441,8 +534,18 @@ df %>%
 
 
 ```
+<br></br>
+<br></br>
 
 # Campaigns
+
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+
+Each newsletter and facebook post contains a unique link which makes it possible to measure the performance of the campaign. The charts below show the number of times each campaign link was clicked and how the resulting users behaved throughout checkout.
+
+<br></br>
+<br></br>
 
 ```{r, message=FALSE, warning=FALSE}
 
@@ -462,17 +565,24 @@ df %>% ggplot(aes(x = campaign, y = value, fill = factor(source))) +
        y="number of clicks") +
   geom_col(position = "stack", alpha = 0.8, width = 0.5) +
   scale_color_manual(values = cols,
-                     aesthetics = c("color", "fill")) +
+                     aesthetics = c("color", "fill"),
+                     name="source",
+                     guide = FALSE) +
   style 
+```
 
+<br></br>
+<br></br>
 
-
+```{r, message=FALSE, warning=FALSE}
 # COLUMN CHART (view_cart , reach_checkout)
 #------------------------------>
 
 df <- campaign %>%
   pivot_longer(!c(source, campaign), names_to = "metric", values_to = "value") %>%
-  filter(metric != "click")
+  filter(metric != "click") %>%
+  mutate(metric = case_when(metric == "view_cart" ~"viewed cart",
+                          metric == "reach_checkout" ~"reached checkout")) 
 
 cols <- c("facebook" = "steelblue",
           "newsletter" = "gold1")
@@ -486,6 +596,7 @@ df %>% ggplot(aes(x = metric, y = value, fill = source)) +
   scale_color_manual(values = cols,
                      aesthetics = c("color", "fill")) +
   style + theme(strip.background = element_rect(colour = "grey40", fill = NA),
+                strip.text = element_text(size=20),
                 panel.border = element_rect(color = "grey40", fill=NA))
 
 ```
