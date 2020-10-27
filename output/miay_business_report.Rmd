@@ -1,12 +1,12 @@
 ---
 title: "Made in America Yarns"
-subtitle: "August, 2020"
+subtitle: "September, 2020"
 output: 
   html_document:
     fig_width: 6
     fig_height: 4
 params: 
-  yearmo: "202008"
+  yearmo: "202009"
 ---
 
 
@@ -15,30 +15,30 @@ params:
 #echo=TRUE means that the code shows
 knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
 
-library(emojifont)
 library(tidyverse)
 
-yearmo <- "202008"
+yearmo <- params$yearmo
 
 #IMPORT DATA
-orders <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/orders_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
-registrations <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/registrations_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
-traffic <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/traffic_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
-coupon <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/coupon_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
-campaign <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/campaign_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+orders <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/orders_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+registrations <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/registrations_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+traffic <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/traffic_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+coupon <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/coupon_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+campaign <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/campaign_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
 
-style <- theme(plot.title = element_text(face = "bold", size = 30),
-               plot.subtitle = element_text(size = 30),
-               axis.title = element_text(size = 25, face="italic"),
-               axis.text = element_text(size = 25),
-               legend.text = element_text(size = 25),
-               legend.title = element_text(face = "bold", size = 25),
+style <- theme(plot.title = element_text(face = "bold", size = 15),
+               axis.title = element_text(size = 13, face="italic"),
+               axis.text = element_text(size = 13),
+               legend.text = element_text(size = 13),
+               legend.title = element_text(face = "bold", size = 13),
                legend.position = "bottom",
                panel.background = element_rect(fill = NA),
                panel.grid.major = element_line(colour = "grey88"),
                axis.ticks = element_line(color=NA),
                axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
-               axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)))
+               axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
+               strip.background = element_rect(colour = "grey40", fill = NA),
+               strip.text = element_text(size=10))
 
 geom_col_base <- geom_col(fill="darkgoldenrod4", alpha=0.6, width=0.5)
 
@@ -125,11 +125,11 @@ vb_plot <- function(df){
   df %>% 
   ggplot(aes(x, y, height = 7, width = 9)) +
   geom_tile(color="orange4", size=2, fill="cornsilk") +
-  geom_text(color = "darkblue", fontface = "bold", size = 20, #size of info
+  geom_text(color = "darkblue", fontface = "bold", size = 10, #size of info
             aes(label = value,y=y+1)) +
-  geom_text(color = "darkblue", fontface = "bold", size = 10,
+  geom_text(color = "darkblue", fontface = "bold", size = 5,
             aes(label = info_top, y=y-0.9)) + #size of value
-  geom_text(color = "darkblue", fontface = "bold", size = 10,
+  geom_text(color = "darkblue", fontface = "bold", size = 5,
             aes(label = info_bottom, y=y-2)) + #size of value
   theme_void() +
   theme(legend.position="none") +
@@ -195,10 +195,10 @@ vb_plot(df)
 
 ```{r message=FALSE, warning=FALSE}
 
-# COLUMN CHART (sales)[variable vs sum]
+# PLOT (profits and losses)
 #------------------------------>
 
-vrs <- c("turnover", "net_profit", "coupons", "refunds", "fee_paypal", "shipping_charged",
+vrs <- c("turnover", "net_profit", "discounts", "refunds", "fee_paypal", "shipping_charged",
          "shipping_cost")
 
 df <- orders %>% 
@@ -211,13 +211,13 @@ df <- orders %>%
                                         "net profit", 
                                         "shipping charged", 
                                         "shipping cost", 
-                                        "coupons", 
+                                        "discounts", 
                                         "refunds", 
                                         "fee paypal")),
          category = case_when(name %in% c("turnover", 
                                           "shipping charged") ~ "profit",
                               name %in% c("shipping cost", 
-                                          "coupons", 
+                                          "discounts", 
                                           "refunds", 
                                           "fee paypal") ~ "loss",
                               name == "net profit" ~ "net profit"))
@@ -234,10 +234,14 @@ df %>%
        x="",
        y="") +  
   geom_col(alpha = 0.8, width=0.8) +
+  geom_text(label = paste("$", formatC(df$value, format = 'd', big.mark = ','), sep=""),
+            y = df$value + 300,
+            size = 3) +
   scale_colour_manual(
     values = cols,
     aesthetics = c("color", "fill"),
     name = "") +
+  expand_limits(y=c(0,vb_turnover+500)) +
   scale_y_continuous(labels = scales::dollar) +
   style + theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
 
@@ -248,7 +252,7 @@ df %>%
 <br></br>
 
 ```{r message=FALSE, warning=FALSE}
-# COLUMN CART (sales)[day vs orders placed]
+# PLOT (orders placed by new vs returning customers)
 #------------------------------>
 
 df <- orders %>% 
@@ -334,7 +338,7 @@ Users who view their cart but do not reach checkout might not be interested enou
 
 ```{r message=FALSE, warning=FALSE}
 
-# COLUMN CHART (traffic)[variable vs. sum]
+# PLOT (order funnel)
 #------------------------------>
 
 df <- data.frame("orders_placed" = sum(orders$orders_placed), 
@@ -359,6 +363,9 @@ df %>%
        x="event",
        y="number of occurrences") +
   geom_col(alpha = 0.8, width = 0.5) +
+  geom_text(label = df$value,
+            y = df$value + 4) +
+  expand_limits(y=c(0,max(df$value+5))) +
   scale_color_manual(values = cols,
                      aesthetics = c("color", "fill"),
                      guide = FALSE) +
@@ -368,47 +375,34 @@ df %>%
 
 **Where do users come from?** 
 <br></br>
-The **source** is the exact url *where* a user was before arriving at madeinamericayarns.com. 
-**Medium** describes *how* a user arrived at madeinamericayarns.com: direct, referral, and search engine. 
-If the medium is **direct**, the user typed "madeinamericayarns.com" directly into their browser's address bar. If the medium is **referral**, the user reached MiAY through another website that linked to MiAY. If the medium is **search engine**, the user found MiAY through a search engine.
+The **source** is the exact url where a user was before arriving at madeinamericayarns.com. 
 
 <br></br>
 <br></br>
 
 ```{r message=FALSE, warning=FALSE}
 
-# PLOT (newsletter signups)
-
-# plot newsletter signups by source
+# PLOT (newsletter signup sources)
 
 df <- traffic %>% 
-  #format source/medium for label
-  mutate(medium = str_replace(replace_na(medium,"direct"), "organic", "search engine")) %>%
-  #group by source/medium
-  group_by(source, medium) %>%
+  #group by source
+  group_by(source) %>%
   #sum newsletter_signups by source
   summarise(newsletter_sign_up = sum(newsletter_sign_up)) %>%
-  filter(newsletter_sign_up != 0) %>%
-  arrange(desc(newsletter_sign_up))
+  filter(newsletter_sign_up != 0)
 
-y_max <- max(df$newsletter_sign_up) 
-
-cols <- c("search engine" = "slategray",
-          "referral" = "slateblue1",
-          "direct" = "slateblue4")
+# order by newsletter signups
+df$source <- factor(df$source, levels = df$source[order(df$newsletter_sign_up)])
 
 df %>%
   ggplot(aes(x = source,
              y = newsletter_sign_up,
              fill = medium)) +
-    geom_col(alpha=0.6, width=0.5) +
+  geom_col_base +
   labs(title="Newsletter Subscribers",
        x="source",
        y="number of newsletter signups") +
-  scale_y_continuous(breaks=seq(0,y_max,1)) +
-  scale_fill_manual(values = cols,
-                    aesthetics = c("fill", "color"),
-                    guide = FALSE) +
+  coord_flip() +
   style 
 
 ```
@@ -418,39 +412,31 @@ df %>%
 
 ```{r message=FALSE, warning=FALSE}
 
-# COLUMN CART (traffic)[source/medium vs sessions]
+# PLOT (all users)
 #------------------------------>
 
 df <- traffic %>% 
   #group by source/medium
   group_by(source, medium) %>%
   #format source/medium for label
-  mutate("sessions" = n(),
-         medium = factor(str_replace(replace_na(medium, "direct"), "organic", "search engine"),
-                         levels = c("direct", "referral", "search engine"))) %>%
-  ungroup() %>%
-  filter(sessions >= 10) %>%
+  summarise("sessions" = sum(users)) %>%
+  filter(sessions >= 10,
+         source != "google") %>%
   select(source,
          medium, 
-         sessions) %>%
-  unique()
+         sessions) 
 
-df$source <- factor(df$source, 
-                           levels = df$source[order(df$sessions, decreasing = TRUE)])
-
-cols <- c("search engine" = "slategray",
-          "referral" = "slateblue1",
-          "direct" = "slateblue4")
+# order by sessions
+df$source <- factor(df$source, levels = df$source[order(df$sessions)])
 
 df %>%
-  ggplot(aes(x = source, y = sessions, fill=medium)) + 
-  geom_col(alpha = 0.8, width = 0.5) +
+  ggplot(aes(x = source, y = sessions)) + 
+  geom_col_base +
   labs(title="All Users",
        x="source",
        y="number of website visits") +
-  scale_fill_manual(values = cols,
-                    aesthetics = c("fill", "color")) +
-  style + theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+  coord_flip() +
+  style 
 
 ```
 <br></br>
@@ -501,7 +487,7 @@ vb_plot(df)
 
 ```{r message=FALSE, warning=FALSE}
 
-# COLUMN CART (coupons)[number of orders and amount discounted]
+# PLOT (discounts)
 #------------------------------>
 
 df <- coupon
@@ -515,13 +501,15 @@ df %>%
        y="amount discounted") +
   scale_y_continuous(labels = scales::dollar) +
   style 
+
 ```
 
 <br></br>
 <br></br>
 
 ```{r message=FALSE, warning=FALSE}
-#number of orders
+#PLOT (coupon applications)
+#------------------------------>
 
 df %>% 
   ggplot(aes(x = coupon_code, y = total_orders)) +
@@ -549,7 +537,7 @@ Each newsletter and facebook post contains a unique link which makes it possible
 
 ```{r, message=FALSE, warning=FALSE}
 
-# COLUMN CHART (total clicks)
+# PLOT (campaign clicks)
 #------------------------------>
 
 df <- campaign %>%
@@ -575,7 +563,7 @@ df %>% ggplot(aes(x = campaign, y = value, fill = factor(source))) +
 <br></br>
 
 ```{r, message=FALSE, warning=FALSE}
-# COLUMN CHART (view_cart , reach_checkout)
+# PLOT (campaign order funnel)
 #------------------------------>
 
 df <- campaign %>%
@@ -595,8 +583,6 @@ df %>% ggplot(aes(x = metric, y = value, fill = source)) +
   geom_col(position = "stack", alpha = 0.8, width=0.5) +
   scale_color_manual(values = cols,
                      aesthetics = c("color", "fill")) +
-  style + theme(strip.background = element_rect(colour = "grey40", fill = NA),
-                strip.text = element_text(size=20),
-                panel.border = element_rect(color = "grey40", fill=NA))
+  style + theme(panel.border = element_rect(color = "grey40", fill=NA))
 
 ```
