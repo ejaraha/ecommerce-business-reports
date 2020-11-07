@@ -20,11 +20,11 @@ library(tidyverse)
 yearmo <- params$yearmo
 
 #IMPORT DATA
-orders <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/orders_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
-registrations <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/registrations_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
-traffic <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/traffic_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
-coupon <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/coupon_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
-campaign <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/campaign_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+orders <- read.csv(paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/orders_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+registrations <- read.csv(paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/registrations_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+traffic <- read.csv(paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/traffic_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+coupon <- read.csv(paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/coupon_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+campaign <- read.csv(paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/campaign_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
 
 style <- theme(plot.title = element_text(face = "bold", size = 15),
                axis.title = element_text(size = 13, face="italic"),

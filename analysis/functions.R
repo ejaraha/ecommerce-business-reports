@@ -217,7 +217,7 @@ source_medium_update_log <- function(){
   yes_no <- as.character(readline(prompt = "Should the records in source_medium_diff be added to source_medium_log.csv? Type \"yes\" or \"no\". "))
   #if "yes", combine source_medium_log and source_medium_diff then update source_medium_log.csv with new records
   if(yes_no == "yes"){
-    write.csv(union(source_medium_log, source_medium_diff), "C:/Users/Owner/repos/miay/data/source_medium_log.csv", row.names = FALSE)
+    write.csv(union(source_medium_log, source_medium_diff), "C:/Users/Owner/repos/ecommerce_business_report/data/source_medium_log.csv", row.names = FALSE)
     print("records from source_medium_diff have been added to source_medium_log.csv")
   }else{
     print("edit clean_google_analytics() accordingly then rerun script")

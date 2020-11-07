@@ -1,13 +1,13 @@
-source("C:/Users/Owner/repos/miay/analysis/clean.R")
+source("C:/Users/Owner/repos/ecommerce_business_report/analysis/clean.R")
 
-#creates five new csv files in "C:/Users/Owner/repos/miay/data/YYYYMM/processed"
+#creates five new csv files in "C:/Users/Owner/repos/ecommerce_business_report/data/YYYYMM/processed"
 #orders_YYYYMM.csv, traffic_YYYYMM.csv, registrations_YYYYMM.csv, 
 #coupon_YYYYMM.csv, campaign_YYYYMM.csv
 
 #create directory ./processed
 #-------------------------------------------->>
 
-dir_name <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed", sep="")
+dir_name <- paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed", sep="")
 ifelse(dir.exists(dir_name) == TRUE, dir_name, dir.create(dir_name))
 
 #convert order-level data to date-level data
@@ -66,7 +66,7 @@ orders <- wc_orders %>% #number of products purchased
          "net_profit" = sales - tax - fee_paypal - refunds - shipping_cost + shipping_charged) %>% 
   select(-c(sales, tax))
 
-file_path <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/orders_", yearmo, ".csv",sep="")
+file_path <- paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/orders_", yearmo, ".csv",sep="")
 write.csv(orders, file_path, row.names = FALSE)
 print(sprintf("FILE CREATED: %s", file_path))
 
@@ -75,7 +75,7 @@ print(sprintf("FILE CREATED: %s", file_path))
 
 registrations <- wc_registrations
 
-file_path <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/registrations_", yearmo, ".csv",sep="")
+file_path <- paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/registrations_", yearmo, ".csv",sep="")
 write.csv(registrations, file_path, row.names = FALSE)
 print(sprintf("FILE CREATED: %s", file_path))
 
@@ -92,7 +92,7 @@ traffic <- google_analytics %>%
             reach_checkout = sum(reach_checkout),
             view_cart = sum(view_cart))
 
-file_path <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/traffic_", yearmo, ".csv",sep="")
+file_path <- paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/traffic_", yearmo, ".csv",sep="")
 write.csv(traffic, file_path, row.names = FALSE)
 print(sprintf("FILE CREATED: %s", file_path))
 
@@ -103,7 +103,7 @@ coupon <- wpe_coupon_data %>%
   group_by(coupon_code) %>%
   summarize(total_discounts = sum(discount_amount), total_orders = n())
 
-file_path <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/coupon_", yearmo, ".csv",sep="")
+file_path <- paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/coupon_", yearmo, ".csv",sep="")
 write.csv(coupon, file_path, row.names = FALSE)
 print(sprintf("FILE CREATED: %s", file_path))
 
@@ -120,7 +120,7 @@ campaign <- traffic %>%
   summarise(across(all_of(vars),sum)) %>%
   rename("click" = users)
 
-file_path <- paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/campaign_", yearmo, ".csv",sep="")
+file_path <- paste("C:/Users/Owner/repos/ecommerce_business_report/data/", yearmo, "/processed/campaign_", yearmo, ".csv",sep="")
 write.csv(campaign, file_path, row.names = FALSE)
 print(sprintf("FILE CREATED: %s", file_path))
 

@@ -1,8 +1,8 @@
-source("C:/Users/Owner/repos/miay/analysis/functions.R")
+source("C:/Users/Owner/repos/ecommerce_business_report/analysis/functions.R")
 
 #set working directory
 #---------------------------------------------->>
-wd <- "C:/Users/Owner/repos/miay/data"
+wd <- "C:/Users/Owner/repos/ecommerce_business_report/data"
 setwd(wd)
 
 #define year and month
