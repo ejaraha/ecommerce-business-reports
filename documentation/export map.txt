@@ -1,0 +1,58 @@
+TRAFFIC
+
+google analytics > Customization > Custom Reports > exports
+- select 5000 from "show rows" drop down
+- export data as CSV
+- OPEN FILE and delete non-tabular rows
+- save as google_analytics_exports_YYYYMM.csv
+
+WooCommerce > Reports > orders > sales by date
+- save as woocommerce_orders_YYYYMM.csv
+
+WooCommerce > Reports > taxes > taxes by date
+- save as woocommerce_tax_YYYYMM.csv
+
+WooCommerce > Reports > customers > customers vs guests
+woocommerce_registrations_YYYYMM.csv
+
+WPEngine > returning customer data
+SELECT date_created, returning_customer
+FROM wp_wc_order_stats
+WHERE date_created LIKE '2020-08%'   ############change this each month
+AND returning_customer IS NOT NULL
+- select "show all"
+- select "check all"
+- select export to CSV
+- save as wpengine_returning_customers_YYYYMM.csv
+
+WPEngine > coupon data
+SELECT a.order_id, b.meta_value as coupon_code, c.date_created, c.discount_amount
+FROM wp_woocommerce_order_items a 
+LEFT JOIN wp_woocommerce_order_itemmeta b 
+ON a.order_item_id = b.order_item_id
+LEFT JOIN wp_wc_order_coupon_lookup c 
+ON a.order_id = c.order_id
+WHERE b.meta_key = 'coupon_data'
+AND date_created LIKE '2020-08%';   ############change this each month
+- select "show all"
+- select "check all"
+- select export to CSV
+- save as wpengine_coupon_data_YYYYMM.csv
+
+Paypal > Activity > All Reports > Activity download 
+- Transaction Type = Completed Payments
+- save as paypal_completed_payments_YYYYMM.csv
+
+USPS > stamps.com > History > Custom Date Range
+-DELETE empty columns at end
+-save as usps_YYYYMM.csv
+
+UPS > ups.com > quickstart > view and pay bill > login > payment > payment activity
+- filter dates
+- printer friendly
+- copy and paste into excel sheet
+- CHANGE DATE FORMAT IN EXCEL
+- save as ups_YYYYMM.csv
+
+
+
