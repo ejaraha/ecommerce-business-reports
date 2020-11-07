@@ -1,12 +1,12 @@
 ---
 title: "Made in America Yarns"
-subtitle: "September, 2020"
+subtitle: "October, 2020"
 output: 
   html_document:
     fig_width: 6
     fig_height: 4
 params: 
-  yearmo: "202009"
+  yearmo: "202010"
 ---
 
 
@@ -87,9 +87,6 @@ p {font-size: 16px}
 <a href="#Made in America Yarns">return to top</a>
 <br></br>
 
-A conversion happens when a user's role in relation to Made in America Yarns changes. When a user subscribes to the newsletter, they become a subscriber. When a user creates an account, they become a registered user. When a user places an order, they become a customer. Conversions for newsletter signups, registrations, and new customers are shown below.
-
-
 ```{r message=FALSE, warning=FALSE, fig.height=2}
 
 # VALUE BOX (conversions)
@@ -146,8 +143,12 @@ vb_plot(df)
 
 <a href="#Made in America Yarns">return to top</a>
 <br></br>
+<br></br>
 
-Turnover is equal to product price multiplied by quantity. Net profit is equal to turnover minus losses due to shipping, refunds, coupons, and paypal fees. Expense and order insights are shown below.
+$$Turnover = Price_{\space product} * Quantitiy_{\space product}$$ 
+<br></br>
+
+$$Net \space Profit = Turnover + Shipping_{\space charged} - Shipping_{\space cost} - Refunds - Discounts - Paypal \space Fees$$
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -266,6 +267,10 @@ df <- orders %>%
                names_to = "customer_type",
                values_to = "orders_placed")
 
+df_totals <- df %>% 
+  group_by(order_day) %>% 
+  summarise("total_orders_placed" = sum(orders_placed))
+
 cols <- c("new" = "darkolivegreen4",
           "returning" = "darkgreen")
 
@@ -275,6 +280,7 @@ df %>%
        x="day of month",
        y="number of orders placed") +
   geom_col(position = "stack", alpha=0.8, width=0.8) +
+  scale_y_continuous(breaks=seq(0,max(df_totals$total_orders_placed), 2)) +
   scale_colour_manual(
   values = cols,
   aesthetics = c("color", "fill"),
@@ -290,7 +296,6 @@ df %>%
 <a href="#Made in America Yarns">return to top</a>
 <br></br>
 
-Where are users coming from and how are they interacting with madeinamericayarns.com? This section shows how users behave throughout checkout and where users and newsletter subscribers come from. 
 
 ````{r message=FALSE, warning=FALSE}
 
@@ -328,10 +333,6 @@ df <- data.frame(
 vb_plot(df)
 
 ```
-
-**How do users behave throughout checkout?**
-<br></br>
-Users who view their cart but do not reach checkout might not be interested enough in the product. Users who reach checkout but do not place an order might be deterred by price. Understanding user behavior throughout checkout can help optimize the checkout process.
 
 <br></br>
 <br></br>
@@ -373,10 +374,6 @@ df %>%
 
 ```
 
-**Where do users come from?** 
-<br></br>
-The **source** is the exact url where a user was before arriving at madeinamericayarns.com. 
-
 <br></br>
 <br></br>
 
@@ -399,7 +396,7 @@ df %>%
              y = newsletter_sign_up,
              fill = medium)) +
   geom_col_base +
-  labs(title="Newsletter Subscribers",
+  labs(title="Sources of Newsletter Subscribers",
        x="source",
        y="number of newsletter signups") +
   coord_flip() +
@@ -432,7 +429,8 @@ df$source <- factor(df$source, levels = df$source[order(df$sessions)])
 df %>%
   ggplot(aes(x = source, y = sessions)) + 
   geom_col_base +
-  labs(title="All Users",
+  labs(title="Sources of All Users",
+       subtitle="Excluding Google",
        x="source",
        y="number of website visits") +
   coord_flip() +
@@ -445,10 +443,6 @@ df %>%
 # Coupons
 
 <a href="#Made in America Yarns">return to top</a>
-<br></br>
-
-Knowing the discounts and number of applications for each coupon can help identify effective promotions. Consider two coupons that were applied the same number of times but result in different amounts in discounts. One could infer that customers were equally interested in both coupons, but the coupon that resulted in less discounts makes more sense from a business perspective.
-
 <br></br>
 <br></br>
 
@@ -511,12 +505,15 @@ df %>%
 #PLOT (coupon applications)
 #------------------------------>
 
+y_max <- sum(df$total_orders)
+
 df %>% 
   ggplot(aes(x = coupon_code, y = total_orders)) +
   geom_col_base +
   labs(title="Coupon Applications",
        x="coupon code",
        y="number of applications") +
+  scale_y_continuous(breaks=seq(0,y_max,2)) +
   style 
 
 
@@ -530,7 +527,14 @@ df %>%
 <a href="#Made in America Yarns">return to top</a>
 <br></br>
 
-Each newsletter and facebook post contains a unique link which makes it possible to measure the performance of the campaign. The charts below show the number of times each campaign link was clicked and how the resulting users behaved throughout checkout.
+**free-bobbin** (10/09-10/16): free bobbin with orders over $50
+<br></br>
+**halloween** (10/30-10/31): 10% cart discount
+<br></br>
+**yom-seeded-yarns** (10/1-10/31): 10% off of select seeded yarns
+<br></br>
+<br></br>
+*Instagram campaigns are uncontrollable therefore they are not tracked.*
 
 <br></br>
 <br></br>
@@ -556,7 +560,7 @@ df %>% ggplot(aes(x = campaign, y = value, fill = factor(source))) +
                      aesthetics = c("color", "fill"),
                      name="source",
                      guide = FALSE) +
-  style 
+  style + theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
 ```
 
 <br></br>
@@ -583,6 +587,7 @@ df %>% ggplot(aes(x = metric, y = value, fill = source)) +
   geom_col(position = "stack", alpha = 0.8, width=0.5) +
   scale_color_manual(values = cols,
                      aesthetics = c("color", "fill")) +
-  style + theme(panel.border = element_rect(color = "grey40", fill=NA))
+  style + theme(panel.border = element_rect(color = "grey40", fill=NA),
+                axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
 
 ```

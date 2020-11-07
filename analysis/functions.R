@@ -86,7 +86,7 @@ clean_usps <- function(usps){
   usps <- usps %>%
   filter(Weight != "") %>%
   separate(Weight, c("lb", "oz")) %>%
-  mutate("date" = lubridate::mdy(Print.Date),
+  mutate("date" = lubridate::mdy(ï..Print.Date),
          #remove "$"
          "shipping_cost" = as.double(str_sub(Amount.Paid, start = 2)),
          #extract state from full address
