@@ -1,0 +1,593 @@
+---
+title: "Ecommerce Business Report"
+subtitle: "October, 2020"
+output: 
+  html_document:
+    fig_width: 6
+    fig_height: 4
+params: 
+  yearmo: "202010"
+---
+
+
+```{r setup, include=FALSE}
+
+#echo=TRUE means that the code shows
+knitr::opts_chunk$set(echo = FALSE, fig.align = "center")
+
+library(tidyverse)
+
+yearmo <- params$yearmo
+
+#IMPORT DATA
+orders <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/orders_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+registrations <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/registrations_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+traffic <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/traffic_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+coupon <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/coupon_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+campaign <- read.csv(paste("C:/Users/Owner/repos/miay/data/", yearmo, "/processed/campaign_", yearmo, ".csv",sep=""), stringsAsFactors = FALSE)
+
+style <- theme(plot.title = element_text(face = "bold", size = 15),
+               axis.title = element_text(size = 13, face="italic"),
+               axis.text = element_text(size = 13),
+               legend.text = element_text(size = 13),
+               legend.title = element_text(face = "bold", size = 13),
+               legend.position = "bottom",
+               panel.background = element_rect(fill = NA),
+               panel.grid.major = element_line(colour = "grey88"),
+               axis.ticks = element_line(color=NA),
+               axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
+               axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
+               strip.background = element_rect(colour = "grey40", fill = NA),
+               strip.text = element_text(size=10))
+
+geom_col_base <- geom_col(fill="darkgoldenrod4", alpha=0.6, width=0.5)
+
+```
+
+
+<script type="text/javascript">
+  // When the document is fully rendered...
+  $(document).ready(function() {
+    // ...select all header elements...
+    $('h1, h2, h3, h4, h5').each(function() {
+      // ...and add an id to them corresponding to their 'titles'
+      $(this).attr('id', $(this).html());
+    });
+  });
+</script>
+
+
+```{css}
+
+h1, h2, h3, p {text-align: center;}
+p {font-size: 16px}
+
+```
+<br></br>
+<br></br>
+
+# Contents
+
+<br></br>
+<a href="#Conversions">Conversions</a>
+<br></br>
+<a href="#Sales">Sales</a>
+<br></br>
+<a href="#Traffic">Traffic</a>
+<br></br>
+<a href="#Coupons">Coupons</a>
+<br></br>
+<a href="#Campaigns">Campaigns</a>
+
+<br></br>
+<br></br>
+
+# Conversions
+
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+
+```{r message=FALSE, warning=FALSE, fig.height=2}
+
+# VALUE BOX (conversions)
+#------------------------------>
+
+# assign variables
+
+vb_newsletter_signup <- as.character(sum(traffic$newsletter_sign_up, registrations$customer_registrations))
+vb_register <- as.character(sum(registrations$customer_registrations))
+vb_new_cust <- as.character(sum(orders$new_customers))
+
+# create df of parameters
+
+df <- data.frame(
+  x = seq(2, 22, 10), # position of box
+  y = rep(1,3), # position of box
+  h = rep(7,3), # size of box
+  w = rep(11,3), # size of box
+  value = c(vb_newsletter_signup,
+            vb_register,
+            vb_new_cust),
+  info_top = c("newsletter",
+           "",
+           "new"),
+  info_bottom = c("signups",
+           "registrations",
+           "customers")
+)
+
+# plot df created above
+
+vb_plot <- function(df){
+  df %>% 
+  ggplot(aes(x, y, height = 7, width = 9)) +
+  geom_tile(color="orange4", size=2, fill="cornsilk") +
+  geom_text(color = "darkblue", fontface = "bold", size = 10, #size of info
+            aes(label = value,y=y+1)) +
+  geom_text(color = "darkblue", fontface = "bold", size = 5,
+            aes(label = info_top, y=y-0.9)) + #size of value
+  geom_text(color = "darkblue", fontface = "bold", size = 5,
+            aes(label = info_bottom, y=y-2)) + #size of value
+  theme_void() +
+  theme(legend.position="none") +
+  coord_fixed() 
+}
+
+vb_plot(df)
+```
+
+<br></br>
+<br></br>
+
+# Sales
+
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+<br></br>
+
+$$Turnover = Price_{\space product} * Quantitiy_{\space product}$$ 
+<br></br>
+
+$$Net \space Profit = Turnover + Shipping_{\space charged} - Shipping_{\space cost} - Refunds - Discounts - Paypal \space Fees$$
+
+```{r message=FALSE, warning=FALSE}
+
+# VALUE BOX (sales)
+#------------------------------>
+
+# assign variables
+
+vb_turnover <- round(sum(orders$turnover),0)
+vb_net <- round(sum(orders$net_profit),0)
+vb_orders <- sum(orders$orders_placed)
+vb_aov <- round(vb_turnover/vb_orders, 0)
+vb_ppo <- floor(mean(replace_na(orders$products_purchased/orders$orders_placed, 0)))
+
+# create df of parameters
+
+df <- data.frame(
+  x = c(7,17,2,12,22), # position of box
+  y = c(9,9,1,1,1), # position of box
+  h = rep(5,5), # size of box
+  w = rep(9,5), # size of box
+  value = c(paste("$", formatC(vb_turnover, format = 'd', big.mark = ','), sep=""),
+            paste("$", formatC(vb_net, format = 'd', big.mark = ','), sep=""),
+            vb_orders,
+            paste("$", formatC(vb_aov, format = 'd', big.mark = ','), sep=""),
+            vb_ppo),
+  info_top = c("",
+           "",
+           "",
+           "average",
+           "products"),
+  info_bottom = c("turnover",
+           "net profit",
+           "orders placed",
+           "order value",
+           "per order")
+)
+
+vb_plot(df)
+
+```
+
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE}
+
+# PLOT (profits and losses)
+#------------------------------>
+
+vrs <- c("turnover", "net_profit", "discounts", "refunds", "fee_paypal", "shipping_charged",
+         "shipping_cost")
+
+df <- orders %>% 
+  #calculate totals for month
+  summarise(across(all_of(vrs), sum)) %>% 
+  #pivot variables to values
+  pivot_longer(cols=everything()) %>%
+  #reorder variables
+  mutate(name = factor(str_replace_all(name,"_", " "), levels = c("turnover", 
+                                        "net profit", 
+                                        "shipping charged", 
+                                        "shipping cost", 
+                                        "discounts", 
+                                        "refunds", 
+                                        "fee paypal")),
+         category = case_when(name %in% c("turnover", 
+                                          "shipping charged") ~ "profit",
+                              name %in% c("shipping cost", 
+                                          "discounts", 
+                                          "refunds", 
+                                          "fee paypal") ~ "loss",
+                              name == "net profit" ~ "net profit"))
+
+cols <- c("profit"="darkolivegreen", 
+          "net profit"="darkgoldenrod4",
+          "loss"="indianred4")
+
+df %>%
+  ggplot(aes(x = name, 
+             y = value,
+             fill = factor(category))) +
+  labs(title="Profits and Losses",
+       x="",
+       y="") +  
+  geom_col(alpha = 0.8, width=0.8) +
+  geom_text(label = paste("$", formatC(df$value, format = 'd', big.mark = ','), sep=""),
+            y = df$value + 300,
+            size = 3) +
+  scale_colour_manual(
+    values = cols,
+    aesthetics = c("color", "fill"),
+    name = "") +
+  expand_limits(y=c(0,vb_turnover+500)) +
+  scale_y_continuous(labels = scales::dollar) +
+  style + theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+
+
+```
+
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE}
+# PLOT (orders placed by new vs returning customers)
+#------------------------------>
+
+df <- orders %>% 
+  mutate("returning" = abs(orders_placed - new_customers),
+         "new" = new_customers,
+         "order_day" = lubridate::day(order_date)) %>%
+  select(order_day, 
+         returning,
+         new) %>%
+  pivot_longer(!order_day,
+               names_to = "customer_type",
+               values_to = "orders_placed")
+
+df_totals <- df %>% 
+  group_by(order_day) %>% 
+  summarise("total_orders_placed" = sum(orders_placed))
+
+cols <- c("new" = "darkolivegreen4",
+          "returning" = "darkgreen")
+
+df %>% 
+  ggplot(aes(x = order_day, y = orders_placed, fill = factor(customer_type))) +
+  labs(title="Orders Placed by New and Returning Customers",
+       x="day of month",
+       y="number of orders placed") +
+  geom_col(position = "stack", alpha=0.8, width=0.8) +
+  scale_y_continuous(breaks=seq(0,max(df_totals$total_orders_placed), 2)) +
+  scale_colour_manual(
+  values = cols,
+  aesthetics = c("color", "fill"),
+  name="customer type") +
+  style 
+
+```
+<br></br>
+<br></br>
+
+# Traffic
+
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+
+
+````{r message=FALSE, warning=FALSE}
+
+# VALUE BOX (traffic)
+#------------------------------>
+
+# assign variables
+
+vb_users <- sum(traffic$users)
+vb_pct_new_users <- round(sum(traffic$new_users)/sum(traffic$users)*100, 0)
+vb_pct_view_cart <- round(sum(traffic$view_cart)/sum(traffic$user)*100, 0)
+vb_pct_reach_checkout <- round(sum(traffic$reach_checkout)/sum(traffic$user)*100, 0)
+
+# create df of parameters
+
+df <- data.frame(
+  x = c(12,2,12,22), # position of box
+  y = c(9,1,1,1), # position of box
+  h = rep(5,4), # size of box
+  w = rep(9,4), # size of box
+  value = c(formatC(vb_users, format = 'd', big.mark = ','),
+            paste(vb_pct_new_users, "%",sep=""),
+            paste(vb_pct_view_cart, "%",sep=""),
+            paste(vb_pct_reach_checkout, "%",sep="")),
+  info_top = c("",
+           "",
+           "viewed",
+           "reached"),
+  info_bottom = c("unique users",
+           "new users",
+           "their cart",
+           "checkout")
+)
+
+vb_plot(df)
+
+```
+
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE}
+
+# PLOT (order funnel)
+#------------------------------>
+
+df <- data.frame("orders_placed" = sum(orders$orders_placed), 
+                 "checkout_page_views" = sum(traffic$reach_checkout), 
+                 "cart_views" = sum(traffic$view_cart))
+
+df <- df %>% 
+  pivot_longer(cols=everything()) %>%
+  mutate(name = case_when(name == "cart_views" ~"viewed cart",
+                          name == "checkout_page_views" ~"reached checkout",
+                          name == "orders_placed" ~"placed an order")) %>%
+  mutate(name = factor(name, levels = c("viewed cart", "reached checkout", "placed an order")))
+           
+
+cols <- c("placed an order"="darkgreen",
+          "reached checkout"="darkolivegreen4", 
+          "viewed cart"="darkolivegreen2")
+
+df %>% 
+  ggplot(aes(x = name, y=value, fill=name)) +
+  labs(title="Order Funnel",
+       x="event",
+       y="number of occurrences") +
+  geom_col(alpha = 0.8, width = 0.5) +
+  geom_text(label = df$value,
+            y = df$value + 4) +
+  expand_limits(y=c(0,max(df$value+5))) +
+  scale_color_manual(values = cols,
+                     aesthetics = c("color", "fill"),
+                     guide = FALSE) +
+  style
+
+```
+
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE}
+
+# PLOT (newsletter signup sources)
+
+df <- traffic %>% 
+  #group by source
+  group_by(source) %>%
+  #sum newsletter_signups by source
+  summarise(newsletter_sign_up = sum(newsletter_sign_up)) %>%
+  filter(newsletter_sign_up != 0)
+
+# order by newsletter signups
+df$source <- factor(df$source, levels = df$source[order(df$newsletter_sign_up)])
+
+df %>%
+  ggplot(aes(x = source,
+             y = newsletter_sign_up,
+             fill = medium)) +
+  geom_col_base +
+  labs(title="Sources of Newsletter Subscribers",
+       x="source",
+       y="number of newsletter signups") +
+  coord_flip() +
+  style 
+
+```
+
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE}
+
+# PLOT (all users)
+#------------------------------>
+
+df <- traffic %>% 
+  #group by source/medium
+  group_by(source, medium) %>%
+  #format source/medium for label
+  summarise("sessions" = sum(users)) %>%
+  filter(sessions >= 10,
+         source != "google") %>%
+  select(source,
+         medium, 
+         sessions) 
+
+# order by sessions
+df$source <- factor(df$source, levels = df$source[order(df$sessions)])
+
+df %>%
+  ggplot(aes(x = source, y = sessions)) + 
+  geom_col_base +
+  labs(title="Sources of All Users",
+       subtitle="Excluding Google",
+       x="source",
+       y="number of website visits") +
+  coord_flip() +
+  style 
+
+```
+<br></br>
+<br></br>
+
+# Coupons
+
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE, fig.height=2}
+
+
+# VALUE BOX (coupons)
+#------------------------------>
+
+# assign variables
+
+vb_coupon_orders <- sum(coupon$total_orders)
+vb_coupon_discounts <- sum(coupon$total_discounts)
+
+# create df of parameters
+
+df <- data.frame(
+  x = c(2,12), # position of box
+  y = c(1,1), # position of box
+  h = rep(5,2), # size of box
+  w = rep(9,2), # size of box
+  value = c(vb_coupon_orders,
+            paste("$",formatC(vb_coupon_discounts, format = 'd', big.mark = ','), sep="")),
+  info_top = c("total coupon",
+           ""),
+  info_bottom = c("applications",
+           "total discounts")
+)
+
+vb_plot(df)
+
+```
+
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE}
+
+# PLOT (discounts)
+#------------------------------>
+
+df <- coupon
+
+#amount discounted
+df %>% 
+  ggplot(aes(x = coupon_code, y = total_discounts)) +
+  geom_col(fill="indianred4", alpha=0.6, width=0.5) +
+  labs(title="Discounts",
+       x="coupon code",
+       y="amount discounted") +
+  scale_y_continuous(labels = scales::dollar) +
+  style 
+
+```
+
+<br></br>
+<br></br>
+
+```{r message=FALSE, warning=FALSE}
+#PLOT (coupon applications)
+#------------------------------>
+
+y_max <- sum(df$total_orders)
+
+df %>% 
+  ggplot(aes(x = coupon_code, y = total_orders)) +
+  geom_col_base +
+  labs(title="Coupon Applications",
+       x="coupon code",
+       y="number of applications") +
+  scale_y_continuous(breaks=seq(0,y_max,2)) +
+  style 
+
+
+
+```
+<br></br>
+<br></br>
+
+# Campaigns
+
+<a href="#Made in America Yarns">return to top</a>
+<br></br>
+
+**free-bobbin** (10/09-10/16): free bobbin with orders over $50
+<br></br>
+**halloween** (10/30-10/31): 10% cart discount
+<br></br>
+**yom-seeded-yarns** (10/1-10/31): 10% off of select seeded yarns
+<br></br>
+<br></br>
+*Instagram campaigns are uncontrollable therefore they are not tracked.*
+
+<br></br>
+<br></br>
+
+```{r, message=FALSE, warning=FALSE}
+
+# PLOT (campaign clicks)
+#------------------------------>
+
+df <- campaign %>%
+  pivot_longer(!c(source, campaign), names_to = "metric", values_to = "value") %>%
+  filter(metric == "click")
+
+cols <- c("facebook" = "steelblue",
+          "newsletter" = "gold1")
+
+df %>% ggplot(aes(x = campaign, y = value, fill = factor(source))) +
+  labs(title="Campaign Link Clicks",
+       x="campaign",
+       y="number of clicks") +
+  geom_col(position = "stack", alpha = 0.8, width = 0.5) +
+  scale_color_manual(values = cols,
+                     aesthetics = c("color", "fill"),
+                     name="source",
+                     guide = FALSE) +
+  style + theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+```
+
+<br></br>
+<br></br>
+
+```{r, message=FALSE, warning=FALSE}
+# PLOT (campaign order funnel)
+#------------------------------>
+
+df <- campaign %>%
+  pivot_longer(!c(source, campaign), names_to = "metric", values_to = "value") %>%
+  filter(metric != "click") %>%
+  mutate(metric = case_when(metric == "view_cart" ~"viewed cart",
+                          metric == "reach_checkout" ~"reached checkout")) 
+
+cols <- c("facebook" = "steelblue",
+          "newsletter" = "gold1")
+
+df %>% ggplot(aes(x = metric, y = value, fill = source)) +
+  labs(title="Campaign Order Funnel",
+       x="event",
+       y="number of occurences") +
+  facet_wrap(~campaign) +
+  geom_col(position = "stack", alpha = 0.8, width=0.5) +
+  scale_color_manual(values = cols,
+                     aesthetics = c("color", "fill")) +
+  style + theme(panel.border = element_rect(color = "grey40", fill=NA),
+                axis.text.x = element_text(angle = 30, vjust = 1, hjust=1))
+
+```
