@@ -84,7 +84,7 @@ p {font-size: 16px}
 
 # Conversions
 
-<a href="#Made in America Yarns">return to top</a>
+<a href="#Ecommerce Business Report">return to top</a>
 <br></br>
 
 ```{r message=FALSE, warning=FALSE, fig.height=2}
@@ -141,7 +141,7 @@ vb_plot(df)
 
 # Sales
 
-<a href="#Made in America Yarns">return to top</a>
+<a href="#Ecommerce Business Report">return to top</a>
 <br></br>
 <br></br>
 
@@ -293,7 +293,7 @@ df %>%
 
 # Traffic
 
-<a href="#Made in America Yarns">return to top</a>
+<a href="#Ecommerce Business Report">return to top</a>
 <br></br>
 
 
@@ -365,7 +365,7 @@ df %>%
        y="number of occurrences") +
   geom_col(alpha = 0.8, width = 0.5) +
   geom_text(label = df$value,
-            y = df$value + 4) +
+            y = df$value + 7) +
   expand_limits(y=c(0,max(df$value+5))) +
   scale_color_manual(values = cols,
                      aesthetics = c("color", "fill"),
@@ -442,7 +442,7 @@ df %>%
 
 # Coupons
 
-<a href="#Made in America Yarns">return to top</a>
+<a href="#Ecommerce Business Report">return to top</a>
 <br></br>
 <br></br>
 
@@ -524,7 +524,7 @@ df %>%
 
 # Campaigns
 
-<a href="#Made in America Yarns">return to top</a>
+<a href="#Ecommerce Business Report">return to top</a>
 <br></br>
 
 **free-bobbin** (10/09-10/16): free bobbin with orders over $50
